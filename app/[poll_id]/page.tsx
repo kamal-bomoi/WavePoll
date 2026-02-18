@@ -1,71 +1,63 @@
 import {
-  Box,
+  Badge,
   Container,
-  Divider,
   Group,
   Paper,
-  Space,
   Stack,
   Text,
+  ThemeIcon,
   Title
 } from "@mantine/core";
+import { IconUsers } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import { NewPollButton } from "@/components/new-poll-button";
-import type { Poll } from "@/types";
-import { nanoid } from "@/utils/nanoid";
+import { WavePollHeader } from "@/components/wavepoll-header";
+import { get_mock_poll } from "@/lib/mock-polls";
 import { VotePollForm } from "./vote-poll-form";
 
 export default async function VotePollPage({
-  searchParams
+  params
 }: PageProps<"/[poll_id]">) {
-  await searchParams;
-
-  // todo v2: fetch poll from database
-  const poll: Poll = {
-    id: nanoid({ length: 8 }),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    expires_at: new Date(2026, 1, 22).toISOString(),
-    title: "Some Poll Title",
-    options: []
-  };
+  const { poll_id } = await params;
+  const poll = get_mock_poll(poll_id);
 
   if (!poll) notFound();
 
   return (
-    <Container size="md">
-      <Paper
-        p="xl"
-        shadow="sm"
-        radius="md"
-        style={{
-          marginTop: 60,
-          position: "relative",
-          maxWidth: 600,
-          marginLeft: "auto",
-          marginRight: "auto"
-        }}
-      >
-        <Stack gap="xs">
-          <Box>
-            <Title c="indigo" ta="center" order={3}>
-              vote
-            </Title>
-            <Divider color="dark" />
-          </Box>
+    <div className="wave-page">
+      <Container size="md">
+        <Paper className="wave-slide-up">
+          <Stack gap="sm">
+            <WavePollHeader title="Voting room" />
+            <Group justify="space-between">
+              <Badge color="indigo" variant="light">
+                {poll.lifecycle}
+              </Badge>
+              <Group gap={6}>
+                <ThemeIcon size="sm" variant="light" color="indigo">
+                  <IconUsers size={14} />
+                </ThemeIcon>
+                <Text size="sm" c="dimmed">
+                  {poll.presence} viewing
+                </Text>
+              </Group>
+            </Group>
 
-          <VotePollForm poll={poll} />
+            <Title order={2}>{poll.title}</Title>
+            <Text c="dimmed">{poll.description}</Text>
 
-          <Space />
-          <Group justify="space-between">
-            <Text size="sm" c="indigo" fw={500}>
-              created {dayjs(poll.created_at).fromNow()}
-            </Text>
-            <NewPollButton />
-          </Group>
-        </Stack>
-      </Paper>
-    </Container>
+            <VotePollForm poll={poll} />
+
+            <Group justify="space-between" pt={8}>
+              <Text size="sm" c="dimmed">
+                Created {dayjs(poll.created_at).fromNow()}
+              </Text>
+              <NewPollButton />
+            </Group>
+          </Stack>
+        </Paper>
+      </Container>
+    </div>
   );
 }

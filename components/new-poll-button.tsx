@@ -9,11 +9,12 @@ export function NewPollButton() {
 
   return (
     <Button
-      leftSection={<IconPlus />}
-      color="dark"
+      leftSection={<IconPlus size={16} />}
+      color="indigo"
+      variant="light"
       onClick={() => router.push("/")}
     >
-      new poll
+      New Poll
     </Button>
   );
 }

@@ -2,31 +2,60 @@ import type { AxiosError } from "axios";
 
 export type AnyObject = Record<string, any>;
 
-// todo: for v2, what more we need based on new features
+export type PollType = "single" | "multiple" | "rating" | "text";
+export type PollLifecycle = "draft" | "live" | "ended";
+
+export interface PollTrendPoint {
+  label: string;
+  votes: number;
+}
+
 export interface Poll {
   id: string;
+  owner_email?: string;
   title: string;
+  description: string;
+  type: PollType;
+  lifecycle: PollLifecycle;
   options: Option[];
-  expires_at?: string;
+  start_at?: string;
+  end_at?: string;
+  allow_multiple_votes: boolean;
+  presence: number;
+  reactions_enabled: boolean;
+  reaction_emojis: string[];
+  reactions_count: number;
+  text_responses_count: number;
+  total_votes: number;
+  rating_average?: number;
+  embed_url: string;
   created_at: string;
   updated_at: string;
 }
 
-// todo: for v2 what we need
 export interface Option {
   id: string;
-  value: string;
+  label: string;
   votes: number;
+  trend: PollTrendPoint[];
 }
 
-// todo: for v2
 export interface CreatePollPayload {
+  owner_email?: string;
   title: string;
+  description?: string;
+  type: PollType;
+  options?: string[];
+  start_at?: string;
+  end_at?: string;
+  reactions_enabled?: boolean;
+  reaction_emojis?: string[];
 }
 
-// todo v2: do we need more based on additional features
 export interface VotePollPayload {
-  option_id: string;
+  option_ids?: string[];
+  rating?: number;
+  comment?: string;
 }
 
 export interface ErrorProps {

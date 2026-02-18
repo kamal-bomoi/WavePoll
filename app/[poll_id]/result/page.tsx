@@ -1,54 +1,35 @@
-import { Container, Group, Paper, Space, Stack, Text } from "@mantine/core";
+import { Container, Group, Paper, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
+import { notFound } from "next/navigation";
 import { PollResultContent } from "@/app/[poll_id]/result/poll-result-content";
 import { NewPollButton } from "@/components/new-poll-button";
-import type { Poll } from "@/types";
-import { nanoid } from "@/utils/nanoid";
+import { WavePollHeader } from "@/components/wavepoll-header";
+import { get_mock_poll } from "@/lib/mock-polls";
 
 export default async function PollResultPage({
-  searchParams
+  params
 }: PageProps<"/[poll_id]/result">) {
-  await searchParams;
+  const { poll_id } = await params;
+  const poll = get_mock_poll(poll_id);
 
-  // todo v2: fetch poll from database
-  const poll: Poll = {
-    id: nanoid({ length: 8 }),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    expires_at: new Date(2026, 1, 22).toISOString(),
-    title: "Some Poll Title",
-    options: [
-      { id: nanoid(), votes: 0, value: "Value 1" },
-      { id: nanoid(), votes: 0, value: "Value 2" }
-    ]
-  };
+  if (!poll) notFound();
 
   return (
-    <Container size="md">
-      <Paper
-        p="xl"
-        shadow="sm"
-        radius="md"
-        style={{
-          marginTop: 60,
-          position: "relative",
-          maxWidth: 600,
-          marginLeft: "auto",
-          marginRight: "auto"
-        }}
-      >
-        <Stack gap="sm">
-          <PollResultContent poll={poll} />
-
-          <Space h="md" />
-          <Group justify="space-between" style={{ width: "100%" }}>
-            <Text size="sm">
-              last updated {dayjs(poll.updated_at).fromNow()}
-            </Text>
-            <NewPollButton />
-          </Group>
-        </Stack>
-      </Paper>
-    </Container>
+    <div className="wave-page">
+      <Container size="md">
+        <Paper className="wave-slide-up">
+          <Stack gap="sm">
+            <WavePollHeader title="Results" />
+            <PollResultContent poll={poll} />
+            <Group justify="space-between" style={{ width: "100%" }}>
+              <Text size="sm" c="dimmed">
+                Last updated {dayjs(poll.updated_at).fromNow()}
+              </Text>
+              <NewPollButton />
+            </Group>
+          </Stack>
+        </Paper>
+      </Container>
+    </div>
   );
 }

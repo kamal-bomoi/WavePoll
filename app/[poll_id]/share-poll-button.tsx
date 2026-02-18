@@ -9,13 +9,13 @@ export function SharePollButton({ disabled }: { disabled?: boolean }) {
     <Button
       color="indigo"
       variant="light"
-      leftSection={<IconShare />}
+      leftSection={<IconShare size={16} />}
       disabled={disabled}
       onClick={() => {
-        clipboard.copy(window.location);
+        clipboard.copy(window.location.href);
       }}
     >
-      {clipboard.copied ? "copied" : "share"}
+      {clipboard.copied ? "Copied link" : "Share"}
     </Button>
   );
 }

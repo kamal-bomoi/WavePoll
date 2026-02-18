@@ -5,8 +5,9 @@ import { colors } from "./colors";
 import { styles } from "./styles";
 
 export const theme = createTheme({
-  fontFamily: "Finlandica, sans-serif",
+  fontFamily: "Manrope, sans-serif",
   primaryColor: "indigo",
+  defaultRadius: "md",
   components: styles,
   colors
 });

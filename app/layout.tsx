@@ -4,15 +4,20 @@ import "../styles.css";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import dayjs from "dayjs";
 import relative_time from "dayjs/plugin/relativeTime";
-import { Finlandica } from "next/font/google";
+import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 import { Providers } from "./providers";
 
 dayjs.extend(relative_time);
 
-const finlandica = Finlandica({
+const manrope = Manrope({
   subsets: ["latin"],
   display: "swap"
 });
+
+export const metadata: Metadata = {
+  title: "WavePoll"
+};
 
 export default function RootLayout({
   children
@@ -24,7 +29,7 @@ export default function RootLayout({
       lang="en"
       {...mantineHtmlProps}
       suppressHydrationWarning
-      className={finlandica.className}
+      className={manrope.className}
     >
       <head>
         <ColorSchemeScript />

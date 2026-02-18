@@ -1,9 +1,6 @@
 import { Text } from "@mantine/core";
-import type { ComponentType } from "react";
-import ReactCountdown, { type CountdownProps } from "react-countdown";
+import ReactCountdown from "react-countdown";
 import { PollEndedAlert } from "./poll-ended-alert";
-
-const Countdown = ReactCountdown as ComponentType<CountdownProps>;
 
 export function PollTimeRemaining({
   time,
@@ -13,18 +10,20 @@ export function PollTimeRemaining({
   on_complete: () => void;
 }) {
   return (
-    <Countdown
+    <ReactCountdown
       date={time}
       onComplete={on_complete}
       onMount={({ completed }) => {
         if (completed) on_complete();
       }}
-      renderer={({ hours, minutes, seconds, completed }) => {
+      renderer={({ days, hours, minutes, seconds, completed }) => {
         if (completed) return <PollEndedAlert />;
 
         return (
-          <Text c="yellow" fs="italic" fz={16}>
-            ends in {hours}:{minutes}:{seconds}
+          <Text c="indigo.7" fs="italic" fz={14} fw={600}>
+            Ends in {days}d {String(hours).padStart(2, "0")}h{" "}
+            {String(minutes).padStart(2, "0")}m{" "}
+            {String(seconds).padStart(2, "0")}s
           </Text>
         );
       }}
