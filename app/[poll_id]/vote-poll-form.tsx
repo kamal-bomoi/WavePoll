@@ -63,10 +63,8 @@ export function VotePollForm({ poll }: { poll: Poll }) {
     rating,
     single_choice
   ]);
-  const reaction_options =
-    poll.reaction_emojis.length > 0
-      ? poll.reaction_emojis
-      : ["\u{1F44F}", "\u{1F525}", "\u{1F4A1}", "\u{1F680}", "\u2764\uFE0F"];
+  const reactions_enabled = Array.isArray(poll.reaction_emojis);
+  const reaction_options = poll.reaction_emojis ?? [];
 
   return (
     <Stack gap="md" mt={8}>
@@ -142,7 +140,7 @@ export function VotePollForm({ poll }: { poll: Poll }) {
         />
       )}
 
-      {poll.reactions_enabled && (
+      {reactions_enabled && (
         <Group gap={8} wrap="wrap">
           {reaction_options.map((emoji) => (
             <Button

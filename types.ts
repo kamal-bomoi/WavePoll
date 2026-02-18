@@ -22,8 +22,7 @@ export interface Poll {
   end_at?: string;
   allow_multiple_votes: boolean;
   presence: number;
-  reactions_enabled: boolean;
-  reaction_emojis: string[];
+  reaction_emojis?: string[];
   reactions_count: number;
   text_responses_count: number;
   total_votes: number;
@@ -41,14 +40,13 @@ export interface Option {
 }
 
 export interface CreatePollPayload {
-  owner_email?: string;
   title: string;
   description?: string;
+  owner_email?: string;
   type: PollType;
   options?: string[];
   start_at?: string;
   end_at?: string;
-  reactions_enabled?: boolean;
   reaction_emojis?: string[];
 }
 
@@ -65,3 +63,9 @@ export interface ErrorProps {
 }
 
 export type ApiError = AxiosError<{ errors: ErrorProps[] }>;
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type Fn = (...args: any[]) => any;

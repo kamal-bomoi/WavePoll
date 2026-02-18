@@ -105,7 +105,6 @@ export default function CreatePollPage() {
       options: ["Native reactions", "Embeddable widgets", "Realtime analytics"],
       start_at: new Date(),
       end_at: dayjs().add(2, "hour").toDate(),
-      reactions_enabled: true,
       reaction_emojis: [
         "\u{1F44F}",
         "\u{1F525}",
@@ -131,9 +130,10 @@ export default function CreatePollPage() {
     [created_poll_ids, known_polls_by_id]
   );
   const can_create = !!form.values.title.trim();
+  const reactions_enabled = Array.isArray(form.values.reaction_emojis);
 
   function toggle_reaction_emoji(emoji: string) {
-    const selected = form.values.reaction_emojis as string[];
+    const selected = (form.values.reaction_emojis ?? []) as string[];
     if (selected.includes(emoji)) {
       form.setFieldValue(
         "reaction_emojis",
@@ -143,6 +143,22 @@ export default function CreatePollPage() {
     }
     if (selected.length >= MAX_REACTION_EMOJIS) return;
     form.setFieldValue("reaction_emojis", [...selected, emoji]);
+  }
+
+  function toggle_reactions_enabled(value: boolean) {
+    if (value) {
+      const existing = form.values.reaction_emojis;
+      if (existing && existing.length > 0) return;
+      form.setFieldValue("reaction_emojis", [
+        "\u{1F44F}",
+        "\u{1F525}",
+        "\u{1F4A1}",
+        "\u{1F680}",
+        "\u2764\uFE0F"
+      ]);
+      return;
+    }
+    form.setFieldValue("reaction_emojis", undefined as any);
   }
 
   function on_save_draft() {
@@ -329,9 +345,11 @@ export default function CreatePollPage() {
               <Stack gap="md">
                 <Title order={3}>Live behavior + protections</Title>
                 <Switch
-                  checked={form.values.reactions_enabled}
+                  checked={reactions_enabled}
                   label="Enable live emoji reactions"
-                  {...form.getInputProps("reactions_enabled")}
+                  onChange={(event) =>
+                    toggle_reactions_enabled(event.currentTarget.checked)
+                  }
                 />
                 <Stack gap={8}>
                   <Group justify="space-between" align="center">
@@ -339,22 +357,22 @@ export default function CreatePollPage() {
                       Reaction emojis
                     </Text>
                     <Text size="xs" c="dimmed">
-                      {(form.values.reaction_emojis as string[]).length}/
+                      {(form.values.reaction_emojis ?? []).length}/
                       {MAX_REACTION_EMOJIS}
                     </Text>
                   </Group>
                   <Group gap={8} wrap="wrap">
                     {AVAILABLE_REACTIONS.map((emoji) => {
-                      const selected = (
-                        form.values.reaction_emojis as string[]
-                      ).includes(emoji);
+                      const selected = (form.values.reaction_emojis ?? []).includes(
+                        emoji
+                      );
 
                       return (
                         <Button
                           key={emoji}
                           size="compact-md"
                           variant={selected ? "filled" : "light"}
-                          disabled={!form.values.reactions_enabled}
+                          disabled={!reactions_enabled}
                           onClick={() => toggle_reaction_emoji(emoji)}
                         >
                           {emoji}

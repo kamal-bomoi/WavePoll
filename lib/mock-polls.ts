@@ -57,7 +57,6 @@ export const mock_polls: Poll[] = [
     end_at: new Date(now.getTime() + 65 * 60 * 1000).toISOString(),
     allow_multiple_votes: false,
     presence: 238,
-    reactions_enabled: true,
     reaction_emojis: [
       "\u{1F44F}",
       "\u{1F525}",
@@ -84,7 +83,6 @@ export const mock_polls: Poll[] = [
     end_at: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
     allow_multiple_votes: false,
     presence: 98,
-    reactions_enabled: true,
     reaction_emojis: [
       "\u{2B50}",
       "\u{1F44F}",
@@ -112,8 +110,6 @@ export const mock_polls: Poll[] = [
     end_at: new Date(now.getTime() + 48 * 60 * 60 * 1000).toISOString(),
     allow_multiple_votes: false,
     presence: 0,
-    reactions_enabled: false,
-    reaction_emojis: [],
     reactions_count: 0,
     text_responses_count: 0,
     total_votes: 0,
