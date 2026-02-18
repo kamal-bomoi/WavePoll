@@ -1,26 +1,40 @@
 {
-  "name": "poll",
+  "name": "wavepoll",
+  "version": "0.0.0",
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "api:dev": "turbo dev --filter=api... --no-cache",
-    "api:build": "turbo build --filter=api",
-    "web:dev": "turbo dev --filter=web... --no-cache",
-    "web:build": "turbo build --filter=web",
-    "typecheck": "turbo typecheck"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bprogress/next": "^3.2.12",
+    "@mantine/core": "^8.3.15",
+    "@mantine/dates": "^8.3.15",
+    "@mantine/form": "^8.3.15",
+    "@mantine/hooks": "^8.3.15",
+    "@tabler/icons-react": "^3.36.1",
+    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-query-devtools": "^5.91.3",
+    "axios": "^1.13.5",
+    "dayjs": "^1.11.19",
+    "immer": "^11.1.4",
+    "nanoid": "^5.1.6",
+    "next": "^16.1.6",
+    "react": "19.2.4",
+    "react-countdown": "^2.3.6",
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
-    "prettier": "^3.5.3",
-    "turbo": "^2.4.4"
+    "@biomejs/biome": "2.4.2",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "postcss": "^8.5.6",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "typescript": "^5.9.3"
   },
-  "packageManager": "yarn@4.5.3",
-  "engines": {
-    "node": ">=20.6.0"
-  }
+  "packageManager": "yarn@4.12.0"
 }

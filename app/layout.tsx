@@ -1,0 +1,42 @@
+import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
+import "../styles.css";
+import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
+import dayjs from "dayjs";
+import relative_time from "dayjs/plugin/relativeTime";
+import { Finlandica } from "next/font/google";
+import { Providers } from "./providers";
+
+dayjs.extend(relative_time);
+
+const finlandica = Finlandica({
+  subsets: ["latin"],
+  display: "swap"
+});
+
+export default function RootLayout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html
+      lang="en"
+      {...mantineHtmlProps}
+      suppressHydrationWarning
+      className={finlandica.className}
+    >
+      <head>
+        <ColorSchemeScript />
+        <link rel="shortcut icon" href="/favicon.svg" />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
+        />
+      </head>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}

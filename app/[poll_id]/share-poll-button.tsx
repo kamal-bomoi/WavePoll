@@ -1,0 +1,21 @@
+import { Button } from "@mantine/core";
+import { useClipboard } from "@mantine/hooks";
+import { IconShare } from "@tabler/icons-react";
+
+export function SharePollButton({ disabled }: { disabled?: boolean }) {
+  const clipboard = useClipboard({ timeout: 1500 });
+
+  return (
+    <Button
+      color="indigo"
+      variant="light"
+      leftSection={<IconShare />}
+      disabled={disabled}
+      onClick={() => {
+        clipboard.copy(window.location);
+      }}
+    >
+      {clipboard.copied ? "copied" : "share"}
+    </Button>
+  );
+}
