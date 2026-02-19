@@ -1,12 +1,10 @@
-import { Alert, Text } from "@mantine/core";
-import { IconAlertCircle } from "@tabler/icons-react";
+import { WaveAlert } from "@/components/wave-alert";
 
 export function PollEndedAlert() {
   return (
-    <Alert icon={<IconAlertCircle strokeWidth={2} />} color="orange" variant="light">
-      <Text c="orange.8" fz={14} fw={600}>
-        This poll has ended. Voting is locked.
-      </Text>
-    </Alert>
+    <WaveAlert
+      type="warning"
+      message="This poll has ended. Voting is locked."
+    />
   );
 }

@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import z from "zod";
-import type { CreatePollPayload, PollRow, PollWithOptions } from "@/types";
+import type { CreatePollPayload, PollRow } from "@/types";
 import { nanoid } from "@/utils/nanoid";
-import { topoll } from "@/utils/poll";
+import { get_poll, get_polls } from "@/utils/poll";
 import { route } from "@/utils/route";
 
 export const POST = route<CreatePollPayload>(
@@ -40,15 +40,7 @@ export const POST = route<CreatePollPayload>(
       }
     }
 
-    const { data: hydrated, error: hydrate_error } = await supabase
-      .from("polls")
-      .select("*,options(*)")
-      .eq("id", poll.id)
-      .single<PollWithOptions>();
-
-    if (hydrate_error) throw hydrate_error;
-
-    return topoll(hydrated);
+    return get_poll(supabase, poll.id);
   },
   {
     status: 201,
@@ -95,17 +87,7 @@ export const GET = route<undefined, Record<string, string>, { ids: string }>(
   async ({ query, supabase }) => {
     const ids = query.ids.split(",");
 
-    if (!ids.length) return [];
-
-    const { data, error } = await supabase
-      .from("polls")
-      .select("*,options(*)")
-      .in("id", ids)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    return data.map(topoll);
+    return get_polls(supabase, ids);
   },
   {
     schema: {

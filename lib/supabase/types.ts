@@ -7,6 +7,8 @@ export type Json =
   | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1";
   };
@@ -37,6 +39,20 @@ export type Database = {
             columns: ["poll_id"];
             isOneToOne: false;
             referencedRelation: "polls";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "poll_options_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_details";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "poll_options_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_stats";
             referencedColumns: ["id"];
           }
         ];
@@ -109,6 +125,20 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "polls";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reactions_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_details";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reactions_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_stats";
+            referencedColumns: ["id"];
           }
         ];
       };
@@ -149,17 +179,110 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "poll_votes_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_details";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_stats";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "votes_option_id_fkey";
             columns: ["option_id"];
             isOneToOne: false;
             referencedRelation: "options";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "votes_option_id_fkey";
+            columns: ["option_id"];
+            isOneToOne: false;
+            referencedRelation: "options_with_votes";
             referencedColumns: ["id"];
           }
         ];
       };
     };
     Views: {
-      [_ in never]: never;
+      options_with_votes: {
+        Row: {
+          created_at: string | null;
+          id: string | null;
+          poll_id: string | null;
+          value: string | null;
+          votes: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "poll_options_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_details";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "poll_options_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls_with_stats";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      polls_with_details: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          end_at: string | null;
+          id: string | null;
+          options: Json | null;
+          owner_email: string | null;
+          presence: number | null;
+          rating_average: number | null;
+          reaction_emojis: string[] | null;
+          reactions_count: number | null;
+          status: string | null;
+          text_responses_count: number | null;
+          title: string | null;
+          total_votes: number | null;
+          type: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
+      polls_with_stats: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          end_at: string | null;
+          id: string | null;
+          owner_email: string | null;
+          presence: number | null;
+          rating_average: number | null;
+          reaction_emojis: string[] | null;
+          reactions_count: number | null;
+          status: string | null;
+          text_responses_count: number | null;
+          title: string | null;
+          total_votes: number | null;
+          type: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       [_ in never]: never;

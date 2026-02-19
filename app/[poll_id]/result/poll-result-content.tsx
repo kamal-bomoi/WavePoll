@@ -23,7 +23,7 @@ import { PollOption } from "./poll-option";
 function download_csv(poll: Poll) {
   const rows = [
     ["option", "votes"],
-    ...poll.options.map((option) => [option.label, `${option.votes}`])
+    ...poll.options.map((option) => [option.value, `${option.votes}`])
   ];
   const csv = rows.map((row) => row.join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

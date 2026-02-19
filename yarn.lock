@@ -580,17 +580,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@supabase/ssr@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@supabase/ssr@npm:0.8.0"
-  dependencies:
-    cookie: "npm:^1.0.2"
-  peerDependencies:
-    "@supabase/supabase-js": ^2.76.1
-  checksum: 10c0/2fe7b867877d19ad61400af3d6c72b8905034f917374e2b35675084fe1bf4cc3ddc660d6ac9c9be7fb6894885602710daa10f6a8a01c43d134e386c5e14728d9
-  languageName: node
-  linkType: hard
-
 "@supabase/storage-js@npm:2.97.0":
   version: 2.97.0
   resolution: "@supabase/storage-js@npm:2.97.0"
@@ -853,13 +842,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:^1.0.2":
-  version: 1.1.1
-  resolution: "cookie@npm:1.1.1"
-  checksum: 10c0/79c4ddc0fcad9c4f045f826f42edf54bcc921a29586a4558b0898277fa89fb47be95bc384c2253f493af7b29500c830da28341274527328f18eba9f58afa112c
-  languageName: node
-  linkType: hard
-
 "cssesc@npm:^3.0.0":
   version: 3.0.0
   resolution: "cssesc@npm:3.0.0"
@@ -947,6 +929,18 @@ __metadata:
     has-tostringtag: "npm:^1.0.2"
     hasown: "npm:^2.0.2"
   checksum: 10c0/ef2ca9ce49afe3931cb32e35da4dcb6d86ab02592cfc2ce3e49ced199d9d0bb5085fc7e73e06312213765f5efa47cc1df553a6a5154584b21448e9fb8355b1af
+  languageName: node
+  linkType: hard
+
+"es-toolkit@npm:^1.44.0":
+  version: 1.44.0
+  resolution: "es-toolkit@npm:1.44.0"
+  dependenciesMeta:
+    "@trivago/prettier-plugin-sort-imports@4.3.0":
+      unplugged: true
+    prettier-plugin-sort-re-exports@0.0.1:
+      unplugged: true
+  checksum: 10c0/b80ff52ddc85ba26914cda57c9d4e46379ccc38c60dc097ef0d065cc0b20f95a16cf8d537969eea600b51c6687b5900a6cce67489db16d5ccc14d47597a29c34
   languageName: node
   linkType: hard
 
@@ -1764,7 +1758,6 @@ __metadata:
     "@mantine/dates": "npm:^8.3.15"
     "@mantine/form": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
-    "@supabase/ssr": "npm:^0.8.0"
     "@supabase/supabase-js": "npm:^2.97.0"
     "@t3-oss/env-nextjs": "npm:^0.13.10"
     "@tabler/icons-react": "npm:^3.36.1"
@@ -1775,6 +1768,7 @@ __metadata:
     "@types/react-dom": "npm:^19.2.3"
     axios: "npm:^1.13.5"
     dayjs: "npm:^1.11.19"
+    es-toolkit: "npm:^1.44.0"
     immer: "npm:^11.1.4"
     nanoid: "npm:^5.1.6"
     next: "npm:^16.1.6"
@@ -1789,7 +1783,6 @@ __metadata:
     type-fest: "npm:^5.4.4"
     typescript: "npm:^5.9.3"
     zod: "npm:^4.3.6"
-    zustand: "npm:^5.0.11"
   languageName: unknown
   linkType: soft
 
@@ -1812,26 +1805,5 @@ __metadata:
   version: 4.3.6
   resolution: "zod@npm:4.3.6"
   checksum: 10c0/860d25a81ab41d33aa25f8d0d07b091a04acb426e605f396227a796e9e800c44723ed96d0f53a512b57be3d1520f45bf69c0cb3b378a232a00787a2609625307
-  languageName: node
-  linkType: hard
-
-"zustand@npm:^5.0.11":
-  version: 5.0.11
-  resolution: "zustand@npm:5.0.11"
-  peerDependencies:
-    "@types/react": ">=18.0.0"
-    immer: ">=9.0.6"
-    react: ">=18.0.0"
-    use-sync-external-store: ">=1.2.0"
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    immer:
-      optional: true
-    react:
-      optional: true
-    use-sync-external-store:
-      optional: true
-  checksum: 10c0/61836b48dac5978c9d1b8289d5162a151bee77828371b9aba6431a079b77faca0635ba53da3f7b331295fbc4e78318a109a4527f7a051cb63abfe79b69ccbecf
   languageName: node
   linkType: hard

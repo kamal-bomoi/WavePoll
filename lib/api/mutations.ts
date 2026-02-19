@@ -1,4 +1,4 @@
-import type { CreatePollPayload, Poll, VotePollPayload } from "@/types";
+import type { CreatePollPayload, Poll, VotePayload } from "@/types";
 import { api } from "./client";
 
 export type Mutation = typeof mutations;
@@ -17,11 +17,11 @@ export const mutations = {
   "create poll": (payload: CreatePollPayload): Promise<Poll> =>
     api.post("/polls", payload),
 
-  "vote poll": ({
+  vote: ({
     poll_id,
-    body
+    payload
   }: {
     poll_id: string;
-    body: VotePollPayload;
-  }): Promise<Poll> => api.patch(`/polls/${poll_id}`, body)
+    payload: VotePayload;
+  }): Promise<Poll> => api.post(`/polls/${poll_id}/votes`, payload)
 } as const satisfies Record<string, (...args: any[]) => Promise<any>>;

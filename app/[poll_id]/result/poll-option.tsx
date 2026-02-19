@@ -15,7 +15,7 @@ export function PollOption({ option, total }: PollOptionProps) {
   return (
     <Stack gap={6}>
       <Group justify="space-between" style={{ width: "100%" }} align="center">
-        <Text fw={600}>{option.label}</Text>
+        <Text fw={600}>{option.value}</Text>
         <Group align="center" gap={8}>
           <Text c="dimmed" size="sm">{`${percent}%`}</Text>
           <Text fw={700} size="sm">

@@ -1,7 +1,4 @@
-"use client";
-
 import {
-  Alert,
   Button,
   Group,
   Radio,
@@ -10,51 +7,53 @@ import {
   Text,
   Textarea
 } from "@mantine/core";
-import { IconDownload, IconSparkles } from "@tabler/icons-react";
+import { IconDownload } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import type { Poll } from "@/types";
+import { useState } from "react";
+import { WaveAlert } from "@/components/wave-alert";
+import { useMutation } from "@/hooks/use-mutation";
+import type { Poll, VotePayload } from "@/types";
 import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
 import { SharePollButton } from "./share-poll-button";
 
-function download_csv(poll: Poll) {
-  const headers = ["poll_id", "title", "type", "total_votes"];
-  const line = [poll.id, `"${poll.title}"`, poll.type, `${poll.total_votes}`];
-  const csv = `${headers.join(",")}\n${line.join(",")}`;
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const href = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = href;
-  anchor.download = `${poll.id}-results.csv`;
-  anchor.click();
-  URL.revokeObjectURL(href);
-}
-
-export function VotePollForm({ poll }: { poll: Poll }) {
-  const [single_choice, set_single_choice] = useState<string | null>(null);
+export function VoteForm({ poll }: { poll: Poll }) {
+  const router = useRouter();
+  const [option_id, set_option_id] = useState<string | null>(null);
   const [rating, set_rating] = useState<number>(0);
   const [comment, set_comment] = useState("");
   const [ended, set_ended] = useState(false);
-  const [voted, set_voted] = useState(false);
   const [reaction, set_reaction] = useState<string | null>(null);
-  const router = useRouter();
+  const mutation = useMutation("vote");
 
-  const has_time_ended = useMemo(
-    () => !!poll.end_at && new Date(poll.end_at) <= new Date(),
-    [poll.end_at]
-  );
+  const has_voted = mutation.isSuccess;
+  const has_time_ended = !!poll.end_at && new Date(poll.end_at) <= new Date();
   const has_ended = ended || has_time_ended;
-
-  const can_submit = useMemo(() => {
-    if (has_ended) return false;
-    if (poll.type === "single") return !!single_choice;
-    if (poll.type === "rating") return rating > 0;
-    if (poll.type === "text") return comment.trim().length > 2;
-    return false;
-  }, [comment, has_ended, poll.type, rating, single_choice]);
   const reactions_enabled = Array.isArray(poll.reaction_emojis);
   const reaction_options = poll.reaction_emojis ?? [];
+  const can_submit =
+    !has_ended &&
+    !has_voted &&
+    ((poll.type === "single" && !!option_id) ||
+      (poll.type === "rating" && rating > 0) ||
+      (poll.type === "text" && comment.trim().length > 2));
+
+  function vote() {
+    if (!can_submit || mutation.isPending) return;
+
+    const payload = (
+      poll.type === "single"
+        ? { option_id, reaction }
+        : poll.type === "rating"
+          ? { rating, reaction }
+          : { comment: comment.trim(), reaction }
+    ) as VotePayload;
+
+    mutation.mutate({
+      poll_id: poll.id,
+      payload
+    });
+  }
 
   return (
     <Stack gap="md" mt={8}>
@@ -68,14 +67,14 @@ export function VotePollForm({ poll }: { poll: Poll }) {
       {has_ended && <PollEndedAlert />}
 
       {poll.type === "single" && (
-        <Radio.Group value={single_choice} onChange={set_single_choice}>
+        <Radio.Group value={option_id} onChange={set_option_id}>
           <Stack gap={10}>
             {poll.options.map((option) => (
               <Radio
                 key={option.id}
                 value={option.id}
-                label={option.label}
-                disabled={has_ended || voted}
+                label={option.value}
+                disabled={has_ended || has_voted || mutation.isPending}
               />
             ))}
           </Stack>
@@ -89,7 +88,7 @@ export function VotePollForm({ poll }: { poll: Poll }) {
             onChange={set_rating}
             count={5}
             size="xl"
-            readOnly={has_ended || voted}
+            readOnly={has_ended || has_voted || mutation.isPending}
           />
           <Text c="dimmed" size="sm">
             {rating > 0 ? `${rating}/5` : "Select a score"}
@@ -104,7 +103,7 @@ export function VotePollForm({ poll }: { poll: Poll }) {
           placeholder="Share your suggestion..."
           value={comment}
           onChange={(event) => set_comment(event.currentTarget.value)}
-          disabled={has_ended || voted}
+          disabled={has_ended || has_voted || mutation.isPending}
         />
       )}
 
@@ -113,9 +112,12 @@ export function VotePollForm({ poll }: { poll: Poll }) {
           {reaction_options.map((emoji) => (
             <Button
               key={emoji}
+              disabled={has_voted}
               size="compact-md"
               variant={reaction === emoji ? "filled" : "light"}
-              onClick={() => set_reaction(emoji)}
+              onClick={() =>
+                set_reaction((current) => (current === emoji ? null : emoji))
+              }
             >
               {emoji}
             </Button>
@@ -126,18 +128,14 @@ export function VotePollForm({ poll }: { poll: Poll }) {
         </Group>
       )}
 
-      {voted && (
-        <Alert color="lime" variant="light" icon={<IconSparkles size={16} />}>
-          Vote submitted. In v2 backend phase this will sync through Supabase
-          Realtime.
-        </Alert>
-      )}
+      {has_voted && <WaveAlert type="success" message="Vote submitted." />}
 
       <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
         <Group wrap="wrap">
           <Button
-            disabled={!can_submit || voted}
-            onClick={() => set_voted(true)}
+            disabled={!can_submit}
+            loading={mutation.isPending}
+            onClick={vote}
           >
             Submit vote
           </Button>
@@ -148,7 +146,7 @@ export function VotePollForm({ poll }: { poll: Poll }) {
           <Button
             variant="outline"
             color="indigo"
-            onClick={() => router.push(`/${poll.id}/result` as any)}
+            onClick={() => router.push(`/${poll.id}/result`)}
           >
             View results
           </Button>
@@ -163,4 +161,17 @@ export function VotePollForm({ poll }: { poll: Poll }) {
       </Group>
     </Stack>
   );
+}
+
+function download_csv(poll: Poll) {
+  const headers = ["poll_id", "title", "type", "total_votes"];
+  const line = [poll.id, `"${poll.title}"`, poll.type, `${poll.total_votes}`];
+  const csv = `${headers.join(",")}\n${line.join(",")}`;
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const href = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = href;
+  anchor.download = `${poll.id}-results.csv`;
+  anchor.click();
+  URL.revokeObjectURL(href);
 }

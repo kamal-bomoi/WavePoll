@@ -1,5 +1,5 @@
 import { Container, Paper, Stack, Text } from "@mantine/core";
-import { VotePollForm } from "@/app/[poll_id]/vote-poll-form";
+import { VoteForm } from "@/app/[poll_id]/vote-form";
 import type { Poll } from "@/types";
 
 export default async function EmbedPollPage({ poll }: { poll: Poll }) {
@@ -10,7 +10,7 @@ export default async function EmbedPollPage({ poll }: { poll: Poll }) {
           <Text size="sm" c="dimmed">
             Embedded via iframe
           </Text>
-          <VotePollForm poll={poll} />
+          <VoteForm poll={poll} />
         </Stack>
       </Paper>
     </Container>

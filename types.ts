@@ -17,8 +17,7 @@ export interface PollTrendPoint {
   votes: number;
 }
 
-export type Option = Pick<Tables<"options">, "id"> & {
-  label: string;
+export type Option = Pick<Tables<"options">, "id" | "value"> & {
   votes: number;
   trend: PollTrendPoint[];
 };
@@ -58,11 +57,10 @@ export interface CreatePollPayload {
   reaction_emojis?: TablesInsert<"polls">["reaction_emojis"];
 }
 
-export interface VotePollPayload {
-  option_id?: string;
-  rating?: number;
-  comment?: string;
-}
+export type VotePayload =
+  | { reaction?: Nullish<string>; option_id: string }
+  | { reaction?: Nullish<string>; rating: number }
+  | { reaction?: Nullish<string>; comment: string };
 
 export interface ErrorProps {
   message: string;
@@ -77,3 +75,5 @@ export type Prettify<T> = {
 } & {};
 
 export type Fn = (...args: any[]) => any;
+
+export type Nullish<T> = T | null | undefined;
