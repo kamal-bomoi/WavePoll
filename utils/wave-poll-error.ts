@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/style/useNamingConvention: <> */
-
 import type { ZodError } from "zod";
 import type { ErrorProps } from "@/types";
 
@@ -37,6 +35,10 @@ export class WavePollError extends Error {
     return new WavePollError(404, error);
   }
 
+  static Conflict(error: ErrorParam) {
+    return new WavePollError(409, error);
+  }
+
   static UnprocessableEntity(error: ErrorParam) {
     return new WavePollError(422, error);
   }
@@ -68,23 +70,3 @@ export class WavePollError extends Error {
     return [this.#error];
   }
 }
-
-// export class NexateApiError extends Error {
-//   errors: ErrorProps[];
-//   map: Record<string, string>;
-//   original: ApiError;
-
-//   constructor(original: ApiError) {
-//     super(original.message);
-
-//     Object.setPrototypeOf(this, NexateApiError.prototype);
-
-//     this.name = "NexateApiError";
-//     this.original = original;
-
-//     const { errors, map } = parse_api_error(original);
-
-//     this.errors = errors;
-//     this.map = map;
-//   }
-// }
