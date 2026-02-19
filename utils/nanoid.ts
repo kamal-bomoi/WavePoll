@@ -23,6 +23,7 @@ export const nanoid = ({
 
   if (!presets.has(alphabet)) presets.set(alphabet, customAlphabet(alphabet));
 
-  // biome-ignore lint/style/noNonNullAssertion: <>
   return presets.get(alphabet)!(length);
 };
+
+nanoid.id = () => nanoid({ length: 12 });

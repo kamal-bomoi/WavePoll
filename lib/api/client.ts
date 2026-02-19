@@ -1,4 +1,7 @@
 import axios, { type AxiosInstance } from "axios";
+import { toast } from "sonner";
+import type { ApiError } from "@/types";
+import { parse_api_error } from "@/utils/error";
 
 class Api {
   readonly #client: AxiosInstance;
@@ -9,6 +12,8 @@ class Api {
       withCredentials: true,
       timeout: 15_000
     });
+
+    this.#interceptors();
   }
 
   async get<T>(...args: Parameters<typeof axios.get>): Promise<T> {
@@ -29,6 +34,16 @@ class Api {
 
   async delete<T>(...args: Parameters<typeof axios.delete>): Promise<T> {
     return (await this.#client.delete<T>(...args)).data;
+  }
+
+  #interceptors(): void {
+    this.#client.interceptors.response.use(undefined, (original: ApiError) => {
+      const { errors } = parse_api_error(original);
+
+      errors.forEach((error) => void toast.error(error.message));
+
+      return Promise.reject(original);
+    });
   }
 }
 

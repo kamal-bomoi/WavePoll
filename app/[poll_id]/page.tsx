@@ -13,16 +13,28 @@ import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import { NewPollButton } from "@/components/new-poll-button";
 import { WavePollHeader } from "@/components/wavepoll-header";
-import { get_mock_poll } from "@/lib/mock-polls";
+import { Supabase } from "@/lib/supabase/client";
+import type { PollWithOptions } from "@/types";
+import { topoll } from "@/utils/poll";
 import { VotePollForm } from "./vote-poll-form";
 
 export default async function VotePollPage({
   params
 }: PageProps<"/[poll_id]">) {
   const { poll_id } = await params;
-  const poll = get_mock_poll(poll_id);
+  const supabase = Supabase();
 
-  if (!poll) notFound();
+  const { data, error } = await supabase
+    .from("polls")
+    .select("*, options(id,value,created_at)")
+    .eq("id", poll_id)
+    .single<PollWithOptions>();
+
+  if (error) throw new Error("Failed to fetch poll.");
+
+  if (!data) notFound();
+
+  const poll = topoll(data);
 
   return (
     <div className="wave-page">
@@ -32,7 +44,7 @@ export default async function VotePollPage({
             <WavePollHeader title="Voting room" />
             <Group justify="space-between">
               <Badge color="indigo" variant="light">
-                {poll.lifecycle}
+                {poll.status}
               </Badge>
               <Group gap={6}>
                 <ThemeIcon size="sm" variant="light" color="indigo">

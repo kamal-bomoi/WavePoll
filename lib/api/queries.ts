@@ -19,7 +19,13 @@ export type QueryParams<T extends QueryKey> = Parameters<Query[T]["fn"]>;
 export const queries = {
   polls: {
     key: () => ["polls"],
-    fn: (): Promise<Poll[]> => api.get("/polls")
+
+    fn: (poll_ids: string[]): Promise<Poll[]> =>
+      api.get("/polls", {
+        params: {
+          ids: poll_ids.join(",")
+        }
+      })
   },
   poll: {
     key: (poll_id: string) => ["poll", poll_id],

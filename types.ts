@@ -1,57 +1,65 @@
 import type { AxiosError } from "axios";
+import type { Tables, TablesInsert } from "@/lib/supabase/types";
+
+export type PollRow = Tables<"polls">;
+
+export type OptionRow = Tables<"options">;
+
+export type PollWithOptions = PollRow & { options?: OptionRow[] };
 
 export type AnyObject = Record<string, any>;
 
-export type PollType = "single" | "multiple" | "rating" | "text";
-export type PollLifecycle = "draft" | "live" | "ended";
+export type PollType = "single" | "rating" | "text";
+export type PollStatus = "draft" | "live";
 
 export interface PollTrendPoint {
   label: string;
   votes: number;
 }
 
-export interface Poll {
-  id: string;
-  owner_email?: string;
-  title: string;
-  description: string;
+export type Option = Pick<Tables<"options">, "id"> & {
+  label: string;
+  votes: number;
+  trend: PollTrendPoint[];
+};
+
+export type Poll = Pick<
+  Tables<"polls">,
+  | "id"
+  | "title"
+  | "description"
+  | "type"
+  | "status"
+  | "created_at"
+  | "updated_at"
+> & {
   type: PollType;
-  lifecycle: PollLifecycle;
+  status: PollStatus;
+  owner_email?: string | null;
+  end_at?: string | null;
+  reaction_emojis?: string[] | null;
   options: Option[];
-  start_at?: string;
-  end_at?: string;
-  allow_multiple_votes: boolean;
   presence: number;
-  reaction_emojis?: string[];
   reactions_count: number;
   text_responses_count: number;
   total_votes: number;
   rating_average?: number;
   embed_url: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Option {
-  id: string;
-  label: string;
-  votes: number;
-  trend: PollTrendPoint[];
-}
+};
 
 export interface CreatePollPayload {
-  title: string;
-  description?: string;
-  owner_email?: string;
   type: PollType;
+  title: string;
+  status: PollStatus;
+  description?: TablesInsert<"polls">["description"];
+  owner_email?: TablesInsert<"polls">["owner_email"];
   options?: string[];
-  start_at?: string;
-  end_at?: string;
-  reaction_emojis?: string[];
+  end_at?: TablesInsert<"polls">["end_at"];
+  reaction_emojis?: TablesInsert<"polls">["reaction_emojis"];
 }
 
 export interface VotePollPayload {
-  option_ids?: string[];
+  option_id?: string;
   rating?: number;
   comment?: string;
 }

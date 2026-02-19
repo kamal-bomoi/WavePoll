@@ -37,9 +37,7 @@ function download_csv(poll: Poll) {
 
 export function PollResultContent({ poll }: { poll: Poll }) {
   const router = useRouter();
-  const has_ended =
-    poll.lifecycle === "ended" ||
-    (!!poll.end_at && new Date(poll.end_at) <= new Date());
+  const has_ended = !!poll.end_at && new Date(poll.end_at) <= new Date();
 
   const total_votes = poll.options.reduce<number>((acc, cur) => acc + cur.votes, 0);
   const participation = Math.round((total_votes / Math.max(poll.presence, 1)) * 100);

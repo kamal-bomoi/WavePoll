@@ -3,7 +3,6 @@
 import {
   Alert,
   Button,
-  Checkbox,
   Group,
   Radio,
   Rating,
@@ -34,7 +33,6 @@ function download_csv(poll: Poll) {
 
 export function VotePollForm({ poll }: { poll: Poll }) {
   const [single_choice, set_single_choice] = useState<string | null>(null);
-  const [multiple_choices, set_multiple_choices] = useState<string[]>([]);
   const [rating, set_rating] = useState<number>(0);
   const [comment, set_comment] = useState("");
   const [ended, set_ended] = useState(false);
@@ -46,23 +44,15 @@ export function VotePollForm({ poll }: { poll: Poll }) {
     () => !!poll.end_at && new Date(poll.end_at) <= new Date(),
     [poll.end_at]
   );
-  const has_ended = ended || has_time_ended || poll.lifecycle === "ended";
+  const has_ended = ended || has_time_ended;
 
   const can_submit = useMemo(() => {
     if (has_ended) return false;
     if (poll.type === "single") return !!single_choice;
-    if (poll.type === "multiple") return multiple_choices.length > 0;
     if (poll.type === "rating") return rating > 0;
     if (poll.type === "text") return comment.trim().length > 2;
     return false;
-  }, [
-    comment,
-    has_ended,
-    multiple_choices.length,
-    poll.type,
-    rating,
-    single_choice
-  ]);
+  }, [comment, has_ended, poll.type, rating, single_choice]);
   const reactions_enabled = Array.isArray(poll.reaction_emojis);
   const reaction_options = poll.reaction_emojis ?? [];
 
@@ -90,28 +80,6 @@ export function VotePollForm({ poll }: { poll: Poll }) {
             ))}
           </Stack>
         </Radio.Group>
-      )}
-
-      {poll.type === "multiple" && (
-        <Stack gap={10}>
-          {poll.options.map((option) => (
-            <Checkbox
-              key={option.id}
-              label={option.label}
-              checked={multiple_choices.includes(option.id)}
-              disabled={has_ended || voted}
-              onChange={(event) => {
-                if (event.currentTarget.checked) {
-                  set_multiple_choices((current) => [...current, option.id]);
-                  return;
-                }
-                set_multiple_choices((current) =>
-                  current.filter((value) => value !== option.id)
-                );
-              }}
-            />
-          ))}
-        </Stack>
       )}
 
       {poll.type === "rating" && (

@@ -1,6 +1,8 @@
+import { PostgrestError } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import type { RequireAtLeastOne } from "type-fest";
 import { ZodError, type ZodType } from "zod";
+import { Supabase } from "@/lib/supabase/client";
 import type { ErrorProps } from "@/types";
 import { WavePollError } from "./wave-poll-error";
 
@@ -9,7 +11,12 @@ export interface RouteContext {
 }
 
 type TypedRouteHandler<TBody, TParams, TQuery> = (
-  context: { body: TBody; params: TParams; query: TQuery },
+  context: {
+    body: TBody;
+    params: TParams;
+    query: TQuery;
+    supabase: ReturnType<typeof Supabase>;
+  },
   req: NextRequest
 ) => Promise<any> | any;
 
@@ -74,7 +81,7 @@ export function route<
         ) as TQuery;
       }
 
-      const context = { body, params, query };
+      const context = { body, params, query, supabase: Supabase() };
 
       const response = await handler(context, req);
 
@@ -83,6 +90,21 @@ export function route<
       });
     } catch (e) {
       const error = e as Error;
+
+      if (error instanceof PostgrestError)
+        return NextResponse.json<{ errors: ErrorProps[] }>(
+          {
+            errors: [
+              {
+                message:
+                  process.env.NODE_ENV === "development"
+                    ? error.message
+                    : "An internal server error occurred"
+              }
+            ]
+          },
+          { status: 500 }
+        );
 
       if (error instanceof ZodError)
         return NextResponse.json<{ errors: ErrorProps[] }>(

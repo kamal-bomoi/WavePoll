@@ -1,21 +1,117 @@
+import dayjs from "dayjs";
 import z from "zod";
-import type { CreatePollPayload } from "@/types";
+import type { CreatePollPayload, PollRow, PollWithOptions } from "@/types";
+import { nanoid } from "@/utils/nanoid";
+import { topoll } from "@/utils/poll";
 import { route } from "@/utils/route";
 
-export const POST = route<CreatePollPayload>(() => {}, {
-  status: 201,
-  schema: {
-    body: z.object({
-      type: z.enum(["single", "multiple", "rating", "text"]),
-      title: z.string(),
-      description: z.string().optional(),
-      owner_email: z.email().optional(),
-      options: z.array(z.string()).optional(),
-      start_at: z.iso.datetime().optional(),
-      end_at: z.iso.datetime().optional(),
-      reaction_emojis: z.array(z.string()).min(1).optional()
-    })
-  }
-});
+export const POST = route<CreatePollPayload>(
+  async ({ body, supabase }) => {
+    const { data: poll, error: create_error } = await supabase
+      .from("polls")
+      .insert({
+        id: nanoid.id(),
+        title: body.title.trim(),
+        type: body.type,
+        status: body.status,
+        description: body.description ?? null,
+        owner_email: body.owner_email ?? null,
+        end_at: body.end_at ?? null,
+        reaction_emojis: body.reaction_emojis ?? null
+      })
+      .select("*")
+      .single<PollRow>();
 
-export const GET = route(() => {});
+    if (create_error) throw create_error;
+
+    if (body.type === "single") {
+      const { error: options_error } = await supabase.from("options").insert(
+        body.options!.map((value) => ({
+          id: nanoid.id(),
+          poll_id: poll.id,
+          value
+        }))
+      );
+
+      if (options_error) {
+        await supabase.from("polls").delete().eq("id", poll.id);
+
+        throw options_error;
+      }
+    }
+
+    const { data: hydrated, error: hydrate_error } = await supabase
+      .from("polls")
+      .select("*,options(*)")
+      .eq("id", poll.id)
+      .single<PollWithOptions>();
+
+    if (hydrate_error) throw hydrate_error;
+
+    return topoll(hydrated);
+  },
+  {
+    status: 201,
+    schema: {
+      body: z
+        .object({
+          type: z.enum(["single", "rating", "text"]),
+          title: z.string().trim().min(1),
+          status: z.enum(["draft", "live"]),
+          description: z.string().trim().optional(),
+          owner_email: z.email().optional(),
+          options: z.array(z.string().trim()).optional(),
+          end_at: z.iso.datetime().optional(),
+          reaction_emojis: z.array(z.string()).min(1).optional()
+        })
+        .superRefine((body, ctx) => {
+          if (body.end_at) {
+            const end_at = dayjs(body.end_at);
+            const min_time = dayjs().add(5, "minute");
+
+            if (!end_at.isValid() || end_at.isBefore(min_time))
+              ctx.addIssue({
+                code: "custom",
+                path: ["end_at"],
+                message: "End time must be at least 5 minutes in the future"
+              });
+          }
+
+          if (
+            body.type === "single" &&
+            (!body.options || body.options.length < 2)
+          )
+            ctx.addIssue({
+              code: "custom",
+              path: ["options"],
+              message: "Single choice polls require at least 2 options."
+            });
+        })
+    }
+  }
+);
+
+export const GET = route<undefined, Record<string, string>, { ids: string }>(
+  async ({ query, supabase }) => {
+    const ids = query.ids.split(",");
+
+    if (!ids.length) return [];
+
+    const { data, error } = await supabase
+      .from("polls")
+      .select("*,options(*)")
+      .in("id", ids)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(topoll);
+  },
+  {
+    schema: {
+      query: z.object({
+        ids: z.string()
+      })
+    }
+  }
+);
