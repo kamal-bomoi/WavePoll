@@ -34,6 +34,11 @@ export interface PollResponsesCursor {
   id: string;
 }
 
+export interface ReactionCount {
+  emoji: string;
+  count: number;
+}
+
 export type Option = Pick<Tables<"options">, "id" | "value"> & {
   votes: number;
   trend: PollTrendPoint[];
@@ -60,6 +65,7 @@ export type Poll = Pick<
   text_responses_count: number;
   total_votes: number;
   rating_average?: number;
+  reaction_breakdown: ReactionCount[];
   embed_url: string;
 };
 

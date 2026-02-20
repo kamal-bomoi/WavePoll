@@ -100,8 +100,25 @@ export function PollResultContent({
       <SimpleGrid cols={{ base: 1, sm: 3 }}>
         <StatCard label="Total votes" value={poll.total_votes} />
         <StatCard label="Participation" value={`${participation}%`} />
-        <StatCard label="Reactions" value={poll.reactions_count} />
+        {!!poll.reaction_emojis?.length && (
+          <StatCard label="Reactions" value={poll.reactions_count} />
+        )}
       </SimpleGrid>
+
+      {!!poll.reaction_emojis?.length && (
+        <Stack gap={8}>
+          <Text size="sm" fw={600}>
+            Reaction breakdown
+          </Text>
+          <Group gap={8}>
+            {poll.reaction_breakdown.map((reaction) => (
+              <Badge key={reaction.emoji} variant="light" size="lg" color="indigo">
+                {reaction.emoji} {reaction.count}
+              </Badge>
+            ))}
+          </Group>
+        </Stack>
+      )}
 
       <Stack gap={6}>
         <Group justify="space-between">

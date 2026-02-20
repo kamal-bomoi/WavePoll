@@ -27,7 +27,23 @@ export async function get_poll(
 
   if (!row) throw WavePollError.NotFound("Poll does not exist.");
 
-  return map_poll(row);
+  const poll = map_poll(row);
+
+  if (poll.reaction_emojis?.length) {
+    const { data: reactions, error: reactions_error } = await supabase
+      .from("reactions")
+      .select("emoji")
+      .eq("poll_id", poll.id);
+
+    if (reactions_error) throw reactions_error;
+
+    poll.reaction_breakdown = build_reaction_breakdown({
+      enabled: poll.reaction_emojis,
+      reactions: reactions.map((reaction) => reaction.emoji)
+    });
+  }
+
+  return poll;
 }
 
 export async function get_polls(
@@ -75,6 +91,10 @@ function map_poll(row: PollWithDetailsRow): Poll {
     text_responses_count: row.text_responses_count ?? 0,
     reactions_count: row.reactions_count ?? 0,
     rating_average: row.rating_average ?? undefined,
+    reaction_breakdown: build_reaction_breakdown({
+      enabled: row.reaction_emojis ?? [],
+      reactions: []
+    }),
     presence: row.presence ?? 0,
     embed_url: `/embed/${row.id}`,
     options: options
@@ -86,6 +106,24 @@ function map_poll(row: PollWithDetailsRow): Poll {
         trend: []
       }))
   };
+}
+
+function build_reaction_breakdown({
+  enabled,
+  reactions
+}: {
+  enabled: string[];
+  reactions: string[];
+}) {
+  const counts = new Map<string, number>(enabled.map((emoji) => [emoji, 0]));
+
+  for (const emoji of reactions)
+    counts.set(emoji, (counts.get(emoji) ?? 0) + 1);
+
+  return Array.from(counts.entries()).map(([emoji, count]) => ({
+    emoji,
+    count
+  }));
 }
 
 function parse_options(value: Json | null): OptionWithVotesRow[] {
