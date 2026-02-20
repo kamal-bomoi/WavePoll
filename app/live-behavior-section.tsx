@@ -45,7 +45,7 @@ export function LiveBehaviorSection({ form }: { form: StudioForm }) {
       <Switch
         checked={reactions_enabled}
         label="Enable live emoji reactions"
-        onChange={(e) => toggle_reactions(e.currentTarget.checked)}
+        onChange={(event) => toggle_reactions(event.currentTarget.checked)}
       />
       {reactions_enabled && (
         <Stack gap={8}>

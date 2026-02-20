@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import z from "zod";
 import type { VotePayload } from "@/types";
+import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
 import { get_poll } from "@/utils/poll";
 import { route } from "@/utils/route";
@@ -107,7 +108,14 @@ export const POST = route<VotePayload, { poll_id: string }>(
         }),
         z.object({
           reaction: z.string().trim().min(1).nullish(),
-          comment: z.string().trim().min(1)
+          comment: z
+            .string()
+            .trim()
+            .min(1)
+            .max(
+              MAX_TEXT_RESPONSE_LENGTH,
+              `Comment must be at most ${MAX_TEXT_RESPONSE_LENGTH} characters.`
+            )
         })
       ]),
       params: z.object({

@@ -14,6 +14,7 @@ import { WaveAlert } from "@/components/wave-alert";
 import { useMutation } from "@/hooks/use-mutation";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll, VotePayload } from "@/types";
+import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
 import { SharePollButton } from "./share-poll-button";
@@ -35,7 +36,9 @@ export function VoteForm({ poll }: { poll: Poll }) {
     !has_voted &&
     ((poll.type === "single" && !!option_id) ||
       (poll.type === "rating" && rating > 0) ||
-      (poll.type === "text" && comment.trim().length > 2));
+      (poll.type === "text" &&
+        comment.trim().length > 2 &&
+        comment.trim().length <= MAX_TEXT_RESPONSE_LENGTH));
 
   function vote() {
     if (!can_submit || mutation.isPending) return;
@@ -93,14 +96,20 @@ export function VoteForm({ poll }: { poll: Poll }) {
       )}
 
       {poll.type === "text" && (
-        <Textarea
-          minRows={4}
-          maxRows={6}
-          placeholder="Share your suggestion..."
-          value={comment}
-          onChange={(event) => set_comment(event.currentTarget.value)}
-          disabled={has_ended || has_voted || mutation.isPending}
-        />
+        <Stack gap={6}>
+          <Textarea
+            minRows={4}
+            maxRows={6}
+            maxLength={MAX_TEXT_RESPONSE_LENGTH}
+            placeholder="Share your suggestion..."
+            value={comment}
+            onChange={(event) => set_comment(event.currentTarget.value)}
+            disabled={has_ended || has_voted || mutation.isPending}
+          />
+          <Text size="xs" c="dimmed">
+            {comment.length}/{MAX_TEXT_RESPONSE_LENGTH}
+          </Text>
+        </Stack>
       )}
 
       {reactions_enabled && (

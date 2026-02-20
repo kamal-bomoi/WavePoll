@@ -65,9 +65,9 @@ export type Database = {
           id: string;
           owner_email: string | null;
           reaction_emojis: string[] | null;
-          status: string;
+          status: Database["public"]["Enums"]["poll_status"];
           title: string;
-          type: string;
+          type: Database["public"]["Enums"]["poll_type"];
           updated_at: string;
         };
         Insert: {
@@ -77,9 +77,9 @@ export type Database = {
           id: string;
           owner_email?: string | null;
           reaction_emojis?: string[] | null;
-          status?: string;
+          status?: Database["public"]["Enums"]["poll_status"];
           title: string;
-          type: string;
+          type?: Database["public"]["Enums"]["poll_type"];
           updated_at?: string;
         };
         Update: {
@@ -89,9 +89,9 @@ export type Database = {
           id?: string;
           owner_email?: string | null;
           reaction_emojis?: string[] | null;
-          status?: string;
+          status?: Database["public"]["Enums"]["poll_status"];
           title?: string;
-          type?: string;
+          type?: Database["public"]["Enums"]["poll_type"];
           updated_at?: string;
         };
         Relationships: [];
@@ -254,11 +254,11 @@ export type Database = {
           rating_average: number | null;
           reaction_emojis: string[] | null;
           reactions_count: number | null;
-          status: string | null;
+          status: Database["public"]["Enums"]["poll_status"] | null;
           text_responses_count: number | null;
           title: string | null;
           total_votes: number | null;
-          type: string | null;
+          type: Database["public"]["Enums"]["poll_type"] | null;
           updated_at: string | null;
         };
         Relationships: [];
@@ -274,11 +274,11 @@ export type Database = {
           rating_average: number | null;
           reaction_emojis: string[] | null;
           reactions_count: number | null;
-          status: string | null;
+          status: Database["public"]["Enums"]["poll_status"] | null;
           text_responses_count: number | null;
           title: string | null;
           total_votes: number | null;
-          type: string | null;
+          type: Database["public"]["Enums"]["poll_type"] | null;
           updated_at: string | null;
         };
         Relationships: [];
@@ -288,7 +288,8 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
-      [_ in never]: never;
+      poll_status: "draft" | "live";
+      poll_type: "single" | "rating" | "text";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -418,6 +419,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {}
+    Enums: {
+      poll_status: ["draft", "live"],
+      poll_type: ["single", "rating", "text"]
+    }
   }
 } as const;
