@@ -25,6 +25,47 @@ body {
     linear-gradient(180deg, #f4f2ff, var(--wave-bg));
 }
 
+[data-sonner-toaster] [data-sonner-toast].wave-toast {
+  font-family: inherit;
+  font-size: 14px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px
+    color-mix(in srgb, var(--mantine-color-slate-9) 12%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="success"].wave-toast {
+  background: color-mix(in srgb, var(--mantine-color-green-2) 72%, transparent);
+  border-color: var(--mantine-color-green-4);
+  color: var(--mantine-color-green-8);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="error"].wave-toast {
+  background: color-mix(in srgb, var(--mantine-color-red-2) 72%, transparent);
+  border-color: var(--mantine-color-red-4);
+  color: var(--mantine-color-red-8);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"].wave-toast {
+  background: color-mix(
+    in srgb,
+    var(--mantine-color-yellow-2) 74%,
+    transparent
+  );
+  border-color: var(--mantine-color-yellow-4);
+  color: var(--mantine-color-yellow-8);
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type="info"].wave-toast {
+  background: color-mix(
+    in srgb,
+    var(--mantine-color-indigo-2) 72%,
+    transparent
+  );
+  border-color: var(--mantine-color-indigo-4);
+  color: var(--mantine-color-indigo-8);
+}
+
 .wave-page {
   min-height: 100vh;
   padding: clamp(1rem, 3vw, 2.5rem) 1rem clamp(2rem, 5vw, 4rem);

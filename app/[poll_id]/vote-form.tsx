@@ -19,7 +19,13 @@ import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
 import { SharePollButton } from "./share-poll-button";
 
-export function VoteForm({ poll }: { poll: Poll }) {
+export function VoteForm({
+  poll,
+  mode = "default"
+}: {
+  poll: Poll;
+  mode?: "default" | "embed";
+}) {
   const router = useRouter();
   const [option_id, set_option_id] = useState<string | null>(null);
   const [rating, set_rating] = useState<number>(0);
@@ -135,8 +141,8 @@ export function VoteForm({ poll }: { poll: Poll }) {
 
       {has_voted && <WaveAlert type="success" message="Vote submitted." />}
 
-      <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
-        <Group wrap="wrap">
+      {mode === "embed" ? (
+        <Group>
           <Button
             disabled={!can_submit}
             loading={mutation.isPending}
@@ -144,26 +150,38 @@ export function VoteForm({ poll }: { poll: Poll }) {
           >
             Submit vote
           </Button>
-          <SharePollButton disabled={has_ended} />
         </Group>
+      ) : (
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
+          <Group wrap="wrap">
+            <Button
+              disabled={!can_submit}
+              loading={mutation.isPending}
+              onClick={vote}
+            >
+              Submit vote
+            </Button>
+            <SharePollButton disabled={has_ended} />
+          </Group>
 
-        <Group wrap="wrap">
-          <Button
-            variant="outline"
-            color="indigo"
-            onClick={() => router.push(`/${poll.id}/result`)}
-          >
-            View results
-          </Button>
-          <Button
-            variant="subtle"
-            leftSection={<IconDownload size={16} />}
-            onClick={() => download_csv(poll)}
-          >
-            Export CSV
-          </Button>
+          <Group wrap="wrap">
+            <Button
+              variant="outline"
+              color="indigo"
+              onClick={() => router.push(`/${poll.id}/result`)}
+            >
+              View results
+            </Button>
+            <Button
+              variant="subtle"
+              leftSection={<IconDownload size={16} />}
+              onClick={() => download_csv(poll)}
+            >
+              Export CSV
+            </Button>
+          </Group>
         </Group>
-      </Group>
+      )}
     </Stack>
   );
 }

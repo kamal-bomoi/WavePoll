@@ -18,6 +18,7 @@ import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll } from "@/types";
 import { PollEndedAlert } from "../poll-ended-alert";
 import { PollTimeRemaining } from "../poll-time-remaining";
+import { EmbedSnippet } from "./embed-snippet";
 import { PollOption } from "./poll-option";
 import { StatCard } from "./stat-card";
 import { TextResponses } from "./text-responses";
@@ -112,7 +113,12 @@ export function PollResultContent({
           </Text>
           <Group gap={8}>
             {poll.reaction_breakdown.map((reaction) => (
-              <Badge key={reaction.emoji} variant="light" size="lg" color="indigo">
+              <Badge
+                key={reaction.emoji}
+                variant="light"
+                size="lg"
+                color="indigo"
+              >
                 {reaction.emoji} {reaction.count}
               </Badge>
             ))}
@@ -131,6 +137,8 @@ export function PollResultContent({
         </Group>
         <Progress color="indigo" value={92} radius="xl" size="lg" animated />
       </Stack>
+
+      <EmbedSnippet poll_id={poll.id} />
 
       <Group justify="space-between" pt={4} wrap="wrap" gap="sm">
         <Group wrap="wrap">

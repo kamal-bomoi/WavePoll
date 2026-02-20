@@ -5,7 +5,6 @@ import { type UseFormReturnType, useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { EmbeddingSection } from "@/app/embedding-section";
 import { LiveBehaviorSection } from "@/app/live-behavior-section";
 import { PollSetupSection } from "@/app/poll-setup-section";
 import { StudioHeader } from "@/app/studio-header";
@@ -120,9 +119,6 @@ export default function StudioPage() {
               <Paper>
                 <Stack gap="md">
                   <LiveBehaviorSection form={form} />
-
-                  <EmbeddingSection />
-
                   <UserPollsSection />
                 </Stack>
               </Paper>

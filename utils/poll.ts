@@ -96,7 +96,6 @@ function map_poll(row: PollWithDetailsRow): Poll {
       reactions: []
     }),
     presence: row.presence ?? 0,
-    embed_url: `/embed/${row.id}`,
     options: options
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
       .map((option) => ({

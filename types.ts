@@ -66,7 +66,6 @@ export type Poll = Pick<
   total_votes: number;
   rating_average?: number;
   reaction_breakdown: ReactionCount[];
-  embed_url: string;
 };
 
 export interface CreatePollPayload {

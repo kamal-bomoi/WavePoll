@@ -11,7 +11,20 @@ const config: NextConfig = {
     }
   },
   typedRoutes: true,
-  devIndicators: false
+  devIndicators: false,
+  async headers() {
+    return [
+      {
+        source: "/embed/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors *"
+          }
+        ]
+      }
+    ];
+  }
 };
 
 export default config;

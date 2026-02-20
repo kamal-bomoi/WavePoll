@@ -32,14 +32,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <Toaster
             position="top-right"
             expand
-            richColors={false}
+            richColors
+            duration={3000}
+            closeButton
+            visibleToasts={5}
             toastOptions={{
-              style: {
-                background: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(79, 70, 229, 0.22)",
-                color: "#0f172a",
-                backdropFilter: "blur(6px)"
-              }
+              className: "wave-toast"
             }}
           />
         </ProgressProvider>
