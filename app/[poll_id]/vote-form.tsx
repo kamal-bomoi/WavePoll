@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { WaveAlert } from "@/components/wave-alert";
 import { useMutation } from "@/hooks/use-mutation";
+import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll, VotePayload } from "@/types";
 import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
@@ -22,13 +23,11 @@ export function VoteForm({ poll }: { poll: Poll }) {
   const [option_id, set_option_id] = useState<string | null>(null);
   const [rating, set_rating] = useState<number>(0);
   const [comment, set_comment] = useState("");
-  const [ended, set_ended] = useState(false);
   const [reaction, set_reaction] = useState<string | null>(null);
   const mutation = useMutation("vote");
+  const [has_ended, end] = usePollEndState(poll);
 
   const has_voted = mutation.isSuccess;
-  const has_time_ended = !!poll.end_at && new Date(poll.end_at) <= new Date();
-  const has_ended = ended || has_time_ended;
   const reactions_enabled = Array.isArray(poll.reaction_emojis);
   const reaction_options = poll.reaction_emojis ?? [];
   const can_submit =
@@ -58,10 +57,7 @@ export function VoteForm({ poll }: { poll: Poll }) {
   return (
     <Stack gap="md" mt={8}>
       {!has_ended && !!poll.end_at && (
-        <PollTimeRemaining
-          time={poll.end_at}
-          on_complete={() => set_ended(true)}
-        />
+        <PollTimeRemaining time={poll.end_at} on_complete={end} />
       )}
 
       {has_ended && <PollEndedAlert />}

@@ -2,7 +2,7 @@ import { type QueryKey, useQueryClient } from "@tanstack/react-query";
 import { type Draft, produce } from "immer";
 import { useCallback } from "react";
 
-export const useUpdateQuery = () => {
+export function useUpdateQuery() {
   const client = useQueryClient();
 
   return useCallback(
@@ -17,4 +17,4 @@ export const useUpdateQuery = () => {
     },
     [client]
   );
-};
+}

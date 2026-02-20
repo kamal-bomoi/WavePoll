@@ -14,3 +14,5 @@ export const AVAILABLE_REACTIONS = [
 ] as const;
 
 export const POLL_IDS_KEY = "wavepoll.poll_ids";
+
+export const PAGINATION_LIMIT = 20;

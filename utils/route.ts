@@ -2,6 +2,7 @@ import { PostgrestError } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import type { RequireAtLeastOne } from "type-fest";
 import { ZodError, type ZodType } from "zod";
+import { env } from "@/env";
 import { Supabase } from "@/lib/supabase/client";
 import type { ErrorProps } from "@/types";
 import { WavePollError } from "./wave-poll-error";
@@ -90,6 +91,8 @@ export function route<
       });
     } catch (e) {
       const error = e as Error;
+
+      if (env.NODE_ENV === "development") console.log(error);
 
       if (error instanceof PostgrestError)
         return NextResponse.json<{ errors: ErrorProps[] }>(

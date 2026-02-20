@@ -1,4 +1,4 @@
-import type { Poll } from "@/types";
+import type { Poll, PollResponsesCursor, PollResponsesPage } from "@/types";
 import { api } from "./client";
 
 interface QueryConfig<TParams extends any[] = any[], TResult = any> {
@@ -30,6 +30,19 @@ export const queries = {
   poll: {
     key: (poll_id: string) => ["poll", poll_id],
     fn: (poll_id: string): Promise<Poll> => api.get(`/polls/${poll_id}`)
+  },
+  responses: {
+    key: (poll_id: string) => ["responses", poll_id],
+    fn: (
+      poll_id: string,
+      cursor?: PollResponsesCursor
+    ): Promise<PollResponsesPage> =>
+      api.get(`/polls/${poll_id}/responses`, {
+        params: {
+          cursor_created_at: cursor?.created_at,
+          cursor_id: cursor?.id
+        }
+      })
   }
 } as const satisfies {
   [k: string]: QueryConfig;

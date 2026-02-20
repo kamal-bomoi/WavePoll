@@ -16,18 +16,14 @@ import { useQuery } from "@/hooks/use-query";
 
 export function UserPollsSection() {
   const [poll_ids, set_poll_ids] = useLocalPollIds();
-  const { data, isSuccess, isFetching } = useQuery(
-    "polls",
-    [poll_ids as string[]],
-    {
-      enabled: !!poll_ids
-    }
-  );
+  const { data, isFetching } = useQuery("polls", [poll_ids as string[]], {
+    enabled: !!poll_ids
+  });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <>
   useEffect(() => {
-    if (isSuccess && !!data) set_poll_ids(data.map((poll) => poll.id));
-  }, [isSuccess, data]);
+    if (data) set_poll_ids(data.map((poll) => poll.id));
+  }, [data]);
 
   return (
     <Stack gap="md">
@@ -35,8 +31,8 @@ export function UserPollsSection() {
       <Stack gap={8}>
         {isFetching && (
           <AbsoluteCenter>
-            <Group align="cen">
-              <Loader color="indigo" size="sm" />
+            <Group align="center">
+              <Loader color="indigo" size="sm" type="dots" />
               <Text c="dimmed" size="sm">
                 Loading your polls...
               </Text>
@@ -73,7 +69,7 @@ export function UserPollsSection() {
                   component={Link}
                   size="xs"
                   variant="subtle"
-                  href={`/${poll.id}` as any}
+                  href={`/${poll.id}/result` as any}
                 >
                   Open
                 </Button>

@@ -17,6 +17,23 @@ export interface PollTrendPoint {
   votes: number;
 }
 
+export type PollResponse = Pick<
+  Tables<"votes">,
+  "id" | "option_id" | "rating" | "comment" | "created_at"
+>;
+
+export interface PollResponsesPage {
+  items: PollResponse[];
+  limit: number;
+  has_more: boolean;
+  next_cursor: PollResponsesCursor | null;
+}
+
+export interface PollResponsesCursor {
+  created_at: string;
+  id: string;
+}
+
 export type Option = Pick<Tables<"options">, "id" | "value"> & {
   votes: number;
   trend: PollTrendPoint[];
