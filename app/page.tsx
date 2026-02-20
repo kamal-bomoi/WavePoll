@@ -32,13 +32,7 @@ export default function StudioPage() {
       status: "live",
       options: ["", ""],
       end_at: dayjs().add(2, "hour").toDate().toISOString(),
-      reaction_emojis: [
-        "\u{1F44F}",
-        "\u{1F525}",
-        "\u{1F4A1}",
-        "\u{1F680}",
-        "\u2764\uFE0F"
-      ]
+      reaction_emojis: undefined
     },
     validate: {
       options: (value, values) => {
