@@ -1,6 +1,7 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import type { NextRequest } from "next/server";
 import z from "zod";
+import { env } from "@/env";
 import type { VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
@@ -9,7 +10,7 @@ import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 export const POST = route<VotePayload, { poll_id: string }>(
-  async ({ body, params, supabase }, req) => {
+  async ({ body, params, supabase }) => {
     const { data: poll, error: poll_error } = await supabase
       .from("polls")
       .select("id,type,status,end_at,reaction_emojis,options(id)")
@@ -54,7 +55,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
         throw WavePollError.UnprocessableEntity("Invalid reaction emoji.");
     }
 
-    const voter_key = await get_voter_key(req);
+    const voter_key = await get_voter_key();
 
     const { error: vote_error } = await supabase.from("votes").insert({
       id: nanoid.id(),
@@ -127,15 +128,19 @@ export const POST = route<VotePayload, { poll_id: string }>(
 
 const VOTER_COOKIE_NAME = "wavepoll_voter_key";
 
-async function get_voter_key(req: NextRequest): Promise<string> {
+async function get_voter_key(): Promise<string> {
   const cookie_store = await cookies();
   const from_cookie = cookie_store.get(VOTER_COOKIE_NAME)?.value;
-  const from_header = req.headers.get("x-wavepoll-voter-key");
-  const value = from_cookie || from_header || nanoid();
+  const signed = extract_signed_voter_key(from_cookie);
+
+  if (from_cookie && !signed)
+    throw WavePollError.BadRequest("Invalid session. Please retry.");
+
+  const value = signed ?? nanoid();
 
   cookie_store.set({
     name: VOTER_COOKIE_NAME,
-    value,
+    value: to_signed_voter_key(value),
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -148,4 +153,39 @@ async function get_voter_key(req: NextRequest): Promise<string> {
 
 function is_unique_violation(error: { code?: string }) {
   return error.code === "23505";
+}
+
+function to_signed_voter_key(voter_key: string): string {
+  return `${voter_key}.${sign(voter_key)}`;
+}
+
+function extract_signed_voter_key(value: string | undefined): string | null {
+  if (!value) return null;
+
+  const separator_index = value.lastIndexOf(".");
+
+  if (separator_index <= 0 || separator_index === value.length - 1) return null;
+
+  const voter_key = value.slice(0, separator_index);
+  const signature = value.slice(separator_index + 1);
+  const expected_signature = sign(voter_key);
+
+  if (!safe_equal(signature, expected_signature)) return null;
+
+  return voter_key;
+}
+
+function sign(value: string): string {
+  return createHmac("sha256", env.COOKIE_SECRET)
+    .update(value)
+    .digest("base64url");
+}
+
+function safe_equal(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+
+  if (left.length !== right.length) return false;
+
+  return timingSafeEqual(left, right);
 }
