@@ -1,5 +1,5 @@
 import type { AxiosError } from "axios";
-import type { Tables, TablesInsert } from "@/lib/supabase/types";
+import type { Database, Tables, TablesInsert } from "@/lib/supabase/types";
 
 export type PollRow = Tables<"polls">;
 
@@ -9,8 +9,8 @@ export type PollWithOptions = PollRow & { options?: OptionRow[] };
 
 export type AnyObject = Record<string, any>;
 
-export type PollType = "single" | "rating" | "text";
-export type PollStatus = "draft" | "live";
+export type PollType = Database["public"]["Enums"]["poll_type"];
+export type PollStatus = Database["public"]["Enums"]["poll_status"];
 
 export interface PollTrendPoint {
   label: string;

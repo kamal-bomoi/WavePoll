@@ -17,6 +17,15 @@ export const mutations = {
   "create poll": (payload: CreatePollPayload): Promise<Poll> =>
     api.post("/polls", payload),
 
+  "publish poll": ({ poll_id }: { poll_id: string }): Promise<Poll> =>
+    api.patch(`/polls/${poll_id}`, { status: "live" }),
+
+  "unpublish poll": ({ poll_id }: { poll_id: string }): Promise<Poll> =>
+    api.patch(`/polls/${poll_id}`, { status: "draft" }),
+
+  "delete poll": ({ poll_id }: { poll_id: string }): Promise<undefined> =>
+    api.delete(`/polls/${poll_id}`),
+
   vote: ({
     poll_id,
     payload

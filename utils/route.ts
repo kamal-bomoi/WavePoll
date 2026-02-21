@@ -53,7 +53,7 @@ export function route<
 >(
   handler: TypedRouteHandler<TBody, TParams, TQuery>,
   options?: RouteOptions<TBody, TParams, TQuery>
-): (req: NextRequest, ctx: RouteContext) => Promise<NextResponse> {
+): (req: NextRequest, ctx: RouteContext) => Promise<NextResponse | Response> {
   return async (req, ctx) => {
     try {
       let body: TBody;
@@ -86,9 +86,11 @@ export function route<
 
       const response = await handler(context, req);
 
-      return NextResponse.json(response, {
-        status: options?.status ?? 200
-      });
+      const status = options?.status ?? 200;
+
+      if (status === 204) return new Response(null, { status });
+
+      return NextResponse.json(response, { status });
     } catch (e) {
       const error = e as Error;
 

@@ -34,11 +34,13 @@ export function VoteForm({
   const mutation = useMutation("vote");
   const [has_ended, end] = usePollEndState(poll);
 
+  const is_live = poll.status === "live";
+  const voting_locked = !is_live || has_ended;
   const has_voted = mutation.isSuccess;
   const reactions_enabled = Array.isArray(poll.reaction_emojis);
   const reaction_options = poll.reaction_emojis ?? [];
   const can_submit =
-    !has_ended &&
+    !voting_locked &&
     !has_voted &&
     ((poll.type === "single" && !!option_id) ||
       (poll.type === "rating" && rating > 0) ||
@@ -69,6 +71,14 @@ export function VoteForm({
         <PollTimeRemaining time={poll.end_at} on_complete={end} />
       )}
 
+      {!is_live && (
+        <WaveAlert
+          type="warning"
+          title=""
+          message="This poll is in draft mode. Voting is disabled until it is published."
+        />
+      )}
+
       {has_ended && <PollEndedAlert />}
 
       {poll.type === "single" && (
@@ -79,7 +89,7 @@ export function VoteForm({
                 key={option.id}
                 value={option.id}
                 label={option.value}
-                disabled={has_ended || has_voted || mutation.isPending}
+                disabled={voting_locked || has_voted || mutation.isPending}
               />
             ))}
           </Stack>
@@ -93,7 +103,7 @@ export function VoteForm({
             onChange={set_rating}
             count={5}
             size="xl"
-            readOnly={has_ended || has_voted || mutation.isPending}
+            readOnly={voting_locked || has_voted || mutation.isPending}
           />
           <Text c="dimmed" size="sm">
             {rating > 0 ? `${rating}/5` : "Select a score"}
@@ -110,7 +120,7 @@ export function VoteForm({
             placeholder="Share your suggestion..."
             value={comment}
             onChange={(event) => set_comment(event.currentTarget.value)}
-            disabled={has_ended || has_voted || mutation.isPending}
+            disabled={voting_locked || has_voted || mutation.isPending}
           />
           <Text size="xs" c="dimmed">
             {comment.length}/{MAX_TEXT_RESPONSE_LENGTH}
@@ -123,7 +133,7 @@ export function VoteForm({
           {reaction_options.map((emoji) => (
             <Button
               key={emoji}
-              disabled={has_voted}
+              disabled={voting_locked || has_voted}
               size="compact-md"
               variant={reaction === emoji ? "filled" : "light"}
               onClick={() =>
@@ -161,7 +171,7 @@ export function VoteForm({
             >
               Submit vote
             </Button>
-            <SharePollButton disabled={has_ended} />
+            <SharePollButton disabled={voting_locked} />
           </Group>
 
           <Group wrap="wrap">

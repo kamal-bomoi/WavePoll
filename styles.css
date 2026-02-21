@@ -71,6 +71,26 @@ body {
   padding: clamp(1rem, 3vw, 2.5rem) 1rem clamp(2rem, 5vw, 4rem);
 }
 
+.wave-footer {
+  padding: 1rem;
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+}
+
+.wave-footer a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mantine-color-indigo-6);
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.wave-footer a:hover {
+  color: var(--mantine-color-indigo-8);
+}
+
 .wave-float {
   animation: wave-float 5s ease-in-out infinite;
 }

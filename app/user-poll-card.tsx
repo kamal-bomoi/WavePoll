@@ -1,0 +1,82 @@
+import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  Group,
+  Paper,
+  Stack,
+  Text
+} from "@mantine/core";
+import { IconExternalLink } from "@tabler/icons-react";
+import Link from "next/link";
+import type { Poll } from "@/types";
+import { DeletePollButton } from "./delete-poll-button";
+import { PublishPollButton } from "./publish-poll-button";
+import { UnpublishPollButton } from "./unpublish-poll-button";
+
+export function UserPollCard({ poll }: { poll: Poll }) {
+  const has_ended = !!poll.end_at && new Date(poll.end_at) <= new Date();
+
+  return (
+    <Paper withBorder radius="md" p="sm">
+      <Stack gap="md">
+        <Box>
+          <Text size="sm" fw={600}>
+            {poll.title}
+          </Text>
+          {!!poll.description && (
+            <Text size="xs" c="dimmed" lineClamp={1}>
+              {poll.description}
+            </Text>
+          )}
+          <Group gap={6}>
+            <Badge size="xs" variant="light" color="indigo">
+              {poll.status}
+            </Badge>
+            <Badge size="xs" variant="outline" color="gray">
+              {poll.type}
+            </Badge>
+            <Text size="xs" c="dimmed">
+              {format_end_at(poll.end_at)}
+            </Text>
+          </Group>
+        </Box>
+
+        <Flex gap={8} align="center" wrap="wrap">
+          <Group gap={8} wrap="wrap">
+            {poll.status === "draft" && !has_ended && (
+              <PublishPollButton poll={poll} />
+            )}
+
+            {poll.status === "live" && !has_ended && (
+              <UnpublishPollButton poll={poll} />
+            )}
+
+            <DeletePollButton poll={poll} />
+          </Group>
+
+          <Button
+            component={Link}
+            size="compact-sm"
+            variant="subtle"
+            leftSection={<IconExternalLink size={14} />}
+            href={`/${poll.id}/result` as any}
+          >
+            Open
+          </Button>
+        </Flex>
+      </Stack>
+    </Paper>
+  );
+}
+
+function format_end_at(value: string | null | undefined): string {
+  if (!value) return "No end time";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "No end time";
+
+  return `Ends ${date.toLocaleString()}`;
+}

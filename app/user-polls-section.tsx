@@ -1,18 +1,9 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Divider,
-  Group,
-  Loader,
-  Stack,
-  Text
-} from "@mantine/core";
-import Link from "next/link";
+import { Divider, Group, Loader, Stack, Text } from "@mantine/core";
 import { useEffect } from "react";
 import { AbsoluteCenter } from "@/components/absolute-center";
 import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { useQuery } from "@/hooks/use-query";
+import { UserPollCard } from "./user-poll-card";
 
 export function UserPollsSection() {
   const [poll_ids, set_poll_ids] = useLocalPollIds();
@@ -39,54 +30,12 @@ export function UserPollsSection() {
             </Group>
           </AbsoluteCenter>
         )}
-
         <Stack gap="lg">
-          {!!data &&
-            data.map((poll) => (
-              <Group key={poll.id} justify="space-between" wrap="wrap" gap="xs">
-                <Box>
-                  <Text size="sm" fw={600}>
-                    {poll.title}
-                  </Text>
-                  {!!poll.description && (
-                    <Text size="xs" c="dimmed" lineClamp={1}>
-                      {poll.description}
-                    </Text>
-                  )}
-                  <Group gap={6}>
-                    <Badge size="xs" variant="light" color="indigo">
-                      {poll.status}
-                    </Badge>
-                    <Badge size="xs" variant="outline" color="gray">
-                      {poll.type}
-                    </Badge>
-                    <Text size="xs" c="dimmed">
-                      {format_end_at(poll.end_at)}
-                    </Text>
-                  </Group>
-                </Box>
-                <Button
-                  component={Link}
-                  size="xs"
-                  variant="subtle"
-                  href={`/${poll.id}/result` as any}
-                >
-                  Open
-                </Button>
-              </Group>
-            ))}
+          {data?.map((poll) => (
+            <UserPollCard key={poll.id} poll={poll} />
+          ))}
         </Stack>
       </Stack>
     </Stack>
   );
-}
-
-function format_end_at(value: string | null | undefined): string {
-  if (!value) return "No end time";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "No end time";
-
-  return `Ends ${date.toLocaleString()}`;
 }
