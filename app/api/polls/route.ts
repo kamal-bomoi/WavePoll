@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import z from "zod";
+import { schedule_poll_end } from "@/lib/qstash";
 import { emit_poll_updated } from "@/lib/realtime";
 import type { CreatePollPayload, PollRow } from "@/types";
 import { nanoid } from "@/utils/nanoid";
@@ -43,7 +44,10 @@ export const POST = route<CreatePollPayload>(
 
     const next_poll = await get_poll(supabase, poll.id);
 
-    await emit_poll_updated(next_poll);
+    await Promise.all([
+      emit_poll_updated(next_poll),
+      schedule_poll_end(next_poll)
+    ]);
 
     return next_poll;
   },

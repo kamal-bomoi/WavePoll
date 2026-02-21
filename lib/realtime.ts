@@ -18,7 +18,10 @@ const schema = {
     presence: z.object({
       poll_id: z.string(),
       presence: z.number().int().nonnegative()
-    })
+    }),
+    ended: z.looseObject({
+      id: z.string()
+    }) as unknown as z.ZodType<Poll>
   }
 };
 
@@ -54,6 +57,14 @@ export async function emit_poll_presence(
       poll_id,
       presence
     });
+  } catch (error) {
+    if (env.NODE_ENV === "development") console.error(error);
+  }
+}
+
+export async function emit_poll_ended(poll: Poll): Promise<void> {
+  try {
+    await realtime.channel(`poll:${poll.id}`).emit("poll.ended", poll);
   } catch (error) {
     if (env.NODE_ENV === "development") console.error(error);
   }

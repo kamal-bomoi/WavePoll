@@ -8,7 +8,11 @@ export const env = createEnv({
     SUPABASE_PUBLISHABLE_DEFAULT_KEY: z.string(),
     COOKIE_SECRET: z.string().min(32),
     UPSTASH_REDIS_REST_URL: z.url(),
-    UPSTASH_REDIS_REST_TOKEN: z.string()
+    UPSTASH_REDIS_REST_TOKEN: z.string(),
+    QSTASH_URL: z.url().optional(),
+    QSTASH_TOKEN: z.string().optional(),
+    QSTASH_CURRENT_SIGNING_KEY: z.string().optional(),
+    QSTASH_NEXT_SIGNING_KEY: z.string().optional()
   },
   client: {},
   runtimeEnv: {
@@ -18,10 +22,16 @@ export const env = createEnv({
     COOKIE_SECRET: process.env.COOKIE_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    APP_BASE_URL: process.env.APP_BASE_URL,
+    QSTASH_URL: process.env.QSTASH_URL,
+    QSTASH_TOKEN: process.env.QSTASH_TOKEN,
+    QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
+    QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY
   },
   shared: {
-    NODE_ENV: z.enum(["development", "production"]).default("development")
+    NODE_ENV: z.enum(["development", "production"]).default("development"),
+    APP_BASE_URL: z.string()
   },
   emptyStringAsUndefined: true
 });

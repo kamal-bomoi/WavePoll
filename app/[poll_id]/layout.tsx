@@ -18,7 +18,7 @@ export default function PollLayout({ children }: { children: ReactNode }) {
 
   useRealtime({
     channels: [`poll:${query.data?.id}`],
-    events: ["poll.updated", "poll.presence"],
+    events: ["poll.updated", "poll.presence", "poll.ended"],
     enabled: !!query.data?.id,
     onData({ event, data }) {
       if (!query.data?.id) return;
@@ -36,6 +36,14 @@ export default function PollLayout({ children }: { children: ReactNode }) {
 
         update_query<Poll>(queries.poll.key(query.data.id), (draft) => {
           draft.presence = data.presence;
+        });
+      }
+
+      if (event === "poll.ended") {
+        if (data.id !== query.data.id) return;
+
+        update_query<Poll>(queries.poll.key(query.data.id), (draft) => {
+          Object.assign(draft, data);
         });
       }
     }
