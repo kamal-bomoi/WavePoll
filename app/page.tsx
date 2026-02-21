@@ -100,6 +100,8 @@ export default function StudioPage() {
         <form onSubmit={on_submit}>
           <Stack gap="lg" className="wave-slide-up">
             <StudioHeader
+              creating={mutation.isPending}
+              status={form.values.status}
               can_submit={
                 !!form.values.title.trim() &&
                 (form.values.type !== "single" ||
@@ -107,8 +109,6 @@ export default function StudioPage() {
                     (option) => option.trim().length > 0
                   ).length >= 2)
               }
-              creating={mutation.isPending}
-              status={form.values.status}
             />
 
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
@@ -130,8 +130,6 @@ export default function StudioPage() {
   );
 }
 
-function to_iso(value: string | null | undefined): string | undefined {
-  if (!value) return undefined;
-
+function to_iso(value: string): string {
   return new Date(value).toISOString();
 }

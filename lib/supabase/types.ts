@@ -61,7 +61,7 @@ export type Database = {
         Row: {
           created_at: string;
           description: string | null;
-          end_at: string | null;
+          end_at: string;
           id: string;
           owner_email: string | null;
           reaction_emojis: string[] | null;
@@ -73,7 +73,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           description?: string | null;
-          end_at?: string | null;
+          end_at: string;
           id: string;
           owner_email?: string | null;
           reaction_emojis?: string[] | null;
@@ -85,7 +85,7 @@ export type Database = {
         Update: {
           created_at?: string;
           description?: string | null;
-          end_at?: string | null;
+          end_at?: string;
           id?: string;
           owner_email?: string | null;
           reaction_emojis?: string[] | null;

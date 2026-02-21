@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
 import { Supabase } from "@/lib/supabase/client";
+import { is_poll_ended } from "@/utils/poll";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 export async function GET(
@@ -21,7 +22,7 @@ export async function GET(
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 
-    if (!poll.end_at || new Date(poll.end_at) > new Date())
+    if (!is_poll_ended(poll))
       throw WavePollError.BadRequest(
         "CSV export is only available after poll ends."
       );

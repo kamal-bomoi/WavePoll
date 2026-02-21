@@ -1,6 +1,6 @@
 import z from "zod";
 import type { PollStatus } from "@/types";
-import { get_poll } from "@/utils/poll";
+import { get_poll, is_poll_ended } from "@/utils/poll";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
@@ -31,7 +31,7 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
 
     if (poll.status === body.status) return get_poll(supabase, poll.id);
 
-    const has_ended = !!poll.end_at && new Date(poll.end_at) <= new Date();
+    const has_ended = is_poll_ended(poll);
 
     if (body.status === "live" && has_ended)
       throw WavePollError.BadRequest(

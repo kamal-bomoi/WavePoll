@@ -61,7 +61,7 @@ export type Poll = Pick<
   type: PollType;
   status: PollStatus;
   owner_email?: string | null;
-  end_at?: string | null;
+  end_at: string;
   reaction_emojis?: string[] | null;
   options: Option[];
   presence: number;
@@ -79,7 +79,7 @@ export interface CreatePollPayload {
   description?: TablesInsert<"polls">["description"];
   owner_email?: TablesInsert<"polls">["owner_email"];
   options?: string[];
-  end_at?: TablesInsert<"polls">["end_at"];
+  end_at: TablesInsert<"polls">["end_at"];
   reaction_emojis?: TablesInsert<"polls">["reaction_emojis"];
 }
 

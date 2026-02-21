@@ -56,9 +56,7 @@ export function PollResultContent({
       {has_ended ? (
         <PollEndedAlert />
       ) : (
-        !!poll.end_at && (
-          <PollTimeRemaining time={poll.end_at} on_complete={end} />
-        )
+        <PollTimeRemaining time={poll.end_at} on_complete={end} />
       )}
 
       <Title order={2}>{poll.title}</Title>

@@ -131,7 +131,8 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
         Schedule
       </Text>
       <DateTimePicker
-        label="End time (optional)"
+        label="End time"
+        required
         valueFormat="MMM D, YYYY h:mm A"
         {...form.getInputProps("end_at")}
       />

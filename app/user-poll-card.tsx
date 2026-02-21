@@ -11,12 +11,13 @@ import {
 import { IconExternalLink } from "@tabler/icons-react";
 import Link from "next/link";
 import type { Poll } from "@/types";
+import { is_poll_ended } from "@/utils/poll";
 import { DeletePollButton } from "./delete-poll-button";
 import { PublishPollButton } from "./publish-poll-button";
 import { UnpublishPollButton } from "./unpublish-poll-button";
 
 export function UserPollCard({ poll }: { poll: Poll }) {
-  const has_ended = !!poll.end_at && new Date(poll.end_at) <= new Date();
+  const has_ended = is_poll_ended(poll);
 
   return (
     <Paper withBorder radius="md" p="sm">
@@ -71,12 +72,10 @@ export function UserPollCard({ poll }: { poll: Poll }) {
   );
 }
 
-function format_end_at(value: string | null | undefined): string {
-  if (!value) return "No end time";
-
+function format_end_at(value: string): string {
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "No end time";
+  if (Number.isNaN(date.getTime())) return "Invalid end time";
 
   return `Ends ${date.toLocaleString()}`;
 }

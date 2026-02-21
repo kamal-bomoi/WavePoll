@@ -13,6 +13,13 @@ type OptionWithVotesRow = {
   votes: number;
 };
 
+export function is_poll_ended(
+  poll: { end_at: string },
+  now = new Date()
+): boolean {
+  return new Date(poll.end_at) <= now;
+}
+
 export async function get_poll(
   supabase: SupabaseClient<Database>,
   poll_id: string
@@ -69,6 +76,7 @@ function map_poll(row: PollWithDetailsRow): Poll {
     !row.title ||
     !row.type ||
     !row.status ||
+    !row.end_at ||
     !row.created_at ||
     !row.updated_at
   )

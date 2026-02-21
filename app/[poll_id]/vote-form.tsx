@@ -12,6 +12,8 @@ import { useState } from "react";
 import { WaveAlert } from "@/components/wave-alert";
 import { useMutation } from "@/hooks/use-mutation";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
+import { useUpdateQuery } from "@/hooks/use-update-query";
+import { queries } from "@/lib/api/queries";
 import type { Poll, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { ExportCSVButton } from "./export-csv-button";
@@ -31,6 +33,7 @@ export function VoteForm({
   const [rating, set_rating] = useState<number>(0);
   const [comment, set_comment] = useState("");
   const [reaction, set_reaction] = useState<string | null>(null);
+  const update_query = useUpdateQuery();
   const mutation = useMutation("vote");
   const [has_ended, end] = usePollEndState(poll);
 
@@ -59,17 +62,24 @@ export function VoteForm({
           : { comment: comment.trim(), reaction }
     ) as VotePayload;
 
-    mutation.mutate({
-      poll_id: poll.id,
-      payload
-    });
+    mutation.mutate(
+      {
+        poll_id: poll.id,
+        payload
+      },
+      {
+        onSuccess(next_poll) {
+          update_query<Poll>(queries.poll.key(poll.id), (draft) => {
+            Object.assign(draft, next_poll);
+          });
+        }
+      }
+    );
   }
 
   return (
     <Stack gap="md" mt={8}>
-      {!has_ended && !!poll.end_at && (
-        <PollTimeRemaining time={poll.end_at} on_complete={end} />
-      )}
+      {!has_ended && <PollTimeRemaining time={poll.end_at} on_complete={end} />}
 
       {!is_live && (
         <WaveAlert

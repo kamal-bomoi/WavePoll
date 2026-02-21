@@ -5,7 +5,7 @@ import { env } from "@/env";
 import type { VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
-import { get_poll } from "@/utils/poll";
+import { get_poll, is_poll_ended } from "@/utils/poll";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
@@ -24,7 +24,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
     if (poll.status !== "live")
       throw WavePollError.BadRequest("Only live polls can receive votes.");
 
-    if (poll.end_at && new Date(poll.end_at) <= new Date())
+    if (is_poll_ended(poll))
       throw WavePollError.BadRequest("This poll has already ended.");
 
     if (poll.type === "single") {

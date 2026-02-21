@@ -16,7 +16,7 @@ export const POST = route<CreatePollPayload>(
         status: body.status,
         description: body.description ?? null,
         owner_email: body.owner_email ?? null,
-        end_at: body.end_at ?? null,
+        end_at: body.end_at,
         reaction_emojis: body.reaction_emojis ?? null
       })
       .select("*")
@@ -53,21 +53,19 @@ export const POST = route<CreatePollPayload>(
           description: z.string().trim().optional(),
           owner_email: z.email().optional(),
           options: z.array(z.string().trim()).optional(),
-          end_at: z.iso.datetime().optional(),
+          end_at: z.iso.datetime(),
           reaction_emojis: z.array(z.string()).min(1).optional()
         })
         .superRefine((body, ctx) => {
-          if (body.end_at) {
-            const end_at = dayjs(body.end_at);
-            const min_time = dayjs().add(5, "minute");
+          const end_at = dayjs(body.end_at);
+          const min_time = dayjs().add(5, "minute");
 
-            if (!end_at.isValid() || end_at.isBefore(min_time))
-              ctx.addIssue({
-                code: "custom",
-                path: ["end_at"],
-                message: "End time must be at least 5 minutes in the future"
-              });
-          }
+          if (!end_at.isValid() || end_at.isBefore(min_time))
+            ctx.addIssue({
+              code: "custom",
+              path: ["end_at"],
+              message: "End time must be at least 5 minutes from now."
+            });
 
           if (
             body.type === "single" &&
