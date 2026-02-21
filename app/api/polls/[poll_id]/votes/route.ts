@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import z from "zod";
 import { env } from "@/env";
+import { emit_poll_updated } from "@/lib/realtime";
 import type { VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
@@ -93,7 +94,11 @@ export const POST = route<VotePayload, { poll_id: string }>(
       }
     }
 
-    return get_poll(supabase, poll.id);
+    const next_poll = await get_poll(supabase, poll.id);
+
+    await emit_poll_updated(next_poll);
+
+    return next_poll;
   },
   {
     status: 201,

@@ -19,12 +19,30 @@ import { NewPollButton } from "@/components/new-poll-button";
 import { WaveAlert } from "@/components/wave-alert";
 import { WavePollHeader } from "@/components/wavepoll-header";
 import { useQuery } from "@/hooks/use-query";
+import { useUpdateQuery } from "@/hooks/use-update-query";
+import { queries } from "@/lib/api/queries";
+import { useRealtime } from "@/lib/realtime-client";
+import type { Poll } from "@/types";
 import { VoteForm } from "./vote-form";
 
 export default function VotePollPage() {
   const params = useParams<{ poll_id: string }>();
+  const update_query = useUpdateQuery();
   const query = useQuery("poll", [params.poll_id], {
     enabled: !!params.poll_id
+  });
+
+  useRealtime({
+    channels: [`poll:${params.poll_id}`],
+    events: ["poll.updated"],
+    enabled: !!query.data?.id,
+    onData({ data }) {
+      if (data.id !== params.poll_id) return;
+
+      update_query<Poll>(queries.poll.key(params.poll_id), (draft) => {
+        Object.assign(draft, data);
+      });
+    }
   });
 
   if (query.isFetching)

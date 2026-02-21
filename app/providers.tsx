@@ -5,6 +5,7 @@ import { MantineProvider } from "@mantine/core";
 import { useMounted } from "@mantine/hooks";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { RealtimeProvider } from "@upstash/realtime/client";
 import dayjs from "dayjs";
 import relative_time from "dayjs/plugin/relativeTime";
 import { Toaster } from "sonner";
@@ -28,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           options={{ showSpinner: false }}
           shallowRouting
         >
-          {children}
+          <RealtimeProvider>{children}</RealtimeProvider>
           <Toaster
             position="top-right"
             expand

@@ -1,4 +1,5 @@
 import z from "zod";
+import { emit_poll_updated } from "@/lib/realtime";
 import type { PollStatus } from "@/types";
 import { get_poll, is_poll_ended } from "@/utils/poll";
 import { route } from "@/utils/route";
@@ -50,7 +51,11 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
 
     if (update_error) throw update_error;
 
-    return get_poll(supabase, poll.id);
+    const next_poll = await get_poll(supabase, poll.id);
+
+    await emit_poll_updated(next_poll);
+
+    return next_poll;
   },
   {
     schema: {

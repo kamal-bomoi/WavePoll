@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import z from "zod";
+import { emit_poll_updated } from "@/lib/realtime";
 import type { CreatePollPayload, PollRow } from "@/types";
 import { nanoid } from "@/utils/nanoid";
 import { get_poll, get_polls } from "@/utils/poll";
@@ -40,7 +41,11 @@ export const POST = route<CreatePollPayload>(
       }
     }
 
-    return get_poll(supabase, poll.id);
+    const next_poll = await get_poll(supabase, poll.id);
+
+    await emit_poll_updated(next_poll);
+
+    return next_poll;
   },
   {
     status: 201,

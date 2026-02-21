@@ -17,13 +17,31 @@ import { WaveAlert } from "@/components/wave-alert";
 import { WavePollHeader } from "@/components/wavepoll-header";
 import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { useQuery } from "@/hooks/use-query";
+import { useUpdateQuery } from "@/hooks/use-update-query";
+import { queries } from "@/lib/api/queries";
+import { useRealtime } from "@/lib/realtime-client";
+import type { Poll } from "@/types";
 
 export default function ResultPage() {
   const params = useParams<{ poll_id: string }>();
   const [poll_ids] = useLocalPollIds();
   const is_owner_view = !!poll_ids?.includes(params.poll_id);
+  const update_query = useUpdateQuery();
   const query = useQuery("poll", [params.poll_id], {
     enabled: !!params.poll_id
+  });
+
+  useRealtime({
+    channels: [`poll:${params.poll_id}`],
+    events: ["poll.updated"],
+    enabled: !!query.data?.id,
+    onData({ data }) {
+      if (data.id !== params.poll_id) return;
+
+      update_query<Poll>(queries.poll.key(params.poll_id), (draft) => {
+        Object.assign(draft, data);
+      });
+    }
   });
 
   if (query.isFetching)
