@@ -12,7 +12,9 @@ export const env = createEnv({
     QSTASH_URL: z.url().optional(),
     QSTASH_TOKEN: z.string().optional(),
     QSTASH_CURRENT_SIGNING_KEY: z.string().optional(),
-    QSTASH_NEXT_SIGNING_KEY: z.string().optional()
+    QSTASH_NEXT_SIGNING_KEY: z.string().optional(),
+    RESEND_API_KEY: z.string().optional(),
+    EMAIL_FROM: z.string().optional()
   },
   client: {},
   runtimeEnv: {
@@ -27,11 +29,13 @@ export const env = createEnv({
     QSTASH_URL: process.env.QSTASH_URL,
     QSTASH_TOKEN: process.env.QSTASH_TOKEN,
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
-    QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY
+    QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM
   },
   shared: {
     NODE_ENV: z.enum(["development", "production"]).default("development"),
-    APP_BASE_URL: z.string()
+    APP_BASE_URL: z.url()
   },
   emptyStringAsUndefined: true
 });

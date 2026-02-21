@@ -1,9 +1,12 @@
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import { waitUntil } from "@vercel/functions";
 import { env } from "@/env";
+import { send_poll_ended_summary_email } from "@/lib/email";
 import { is_qstash_signature_configured } from "@/lib/qstash";
 import { emit_poll_ended } from "@/lib/realtime";
 import { redis } from "@/lib/redis";
 import { Supabase } from "@/lib/supabase/client";
+import type { Poll } from "@/types";
 import { get_poll, is_poll_ended } from "@/utils/poll";
 
 const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24 * 30;
@@ -36,16 +39,22 @@ async function handler(
 
   if (!created) return Response.json({ ok: true });
 
+  let next_poll: Poll;
+
   try {
     await redis.expire(lock_key, IDEMPOTENCY_TTL_SECONDS);
 
-    const next_poll = await get_poll(supabase, poll.id);
+    next_poll = await get_poll(supabase, poll.id);
 
     await emit_poll_ended(next_poll);
   } catch (error) {
     await redis.del(lock_key);
+
     throw error;
   }
+
+  if (next_poll.owner_email && env.RESEND_API_KEY)
+    waitUntil(send_poll_ended_summary_email(next_poll));
 
   return Response.json({ ok: true });
 }
