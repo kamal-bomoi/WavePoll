@@ -2,8 +2,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import z from "zod";
 import { env } from "@/env";
-import { emit_poll_updated } from "@/lib/realtime";
-import type { VotePayload } from "@/types";
+import { emit_poll_new_comment, emit_poll_updated } from "@/lib/realtime";
+import type { PollResponse, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
 import { get_poll, is_poll_ended } from "@/utils/poll";
@@ -58,14 +58,18 @@ export const POST = route<VotePayload, { poll_id: string }>(
 
     const voter_key = await get_voter_key();
 
-    const { error: vote_error } = await supabase.from("votes").insert({
-      id: nanoid.id(),
-      poll_id: poll.id,
-      voter_key,
-      option_id: "option_id" in body ? body.option_id : null,
-      rating: "rating" in body ? body.rating : null,
-      comment: "comment" in body ? body.comment : null
-    });
+    const { data: vote, error: vote_error } = await supabase
+      .from("votes")
+      .insert({
+        id: nanoid.id(),
+        poll_id: poll.id,
+        voter_key,
+        option_id: "option_id" in body ? body.option_id : null,
+        rating: "rating" in body ? body.rating : null,
+        comment: "comment" in body ? body.comment : null
+      })
+      .select("id,option_id,rating,comment,created_at")
+      .single<PollResponse>();
 
     if (vote_error) {
       if (is_unique_violation(vote_error))
@@ -96,7 +100,12 @@ export const POST = route<VotePayload, { poll_id: string }>(
 
     const next_poll = await get_poll(supabase, poll.id);
 
-    await emit_poll_updated(next_poll);
+    await Promise.all([
+      emit_poll_updated(next_poll),
+      poll.type === "text" && !!vote.comment
+        ? emit_poll_new_comment(poll.id, vote)
+        : Promise.resolve()
+    ]);
 
     return next_poll;
   },

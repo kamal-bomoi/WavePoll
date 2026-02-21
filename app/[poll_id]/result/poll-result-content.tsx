@@ -37,8 +37,9 @@ export function PollResultContent({
     (acc, cur) => acc + cur.votes,
     0
   );
-  const participation = Math.round(
-    (total_votes / Math.max(poll.presence, 1)) * 100
+  const participation = Math.min(
+    100,
+    Math.round((poll.total_votes / Math.max(poll.presence, 1)) * 100)
   );
 
   return (

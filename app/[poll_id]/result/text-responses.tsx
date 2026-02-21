@@ -10,10 +10,15 @@ import {
   ThemeIcon
 } from "@mantine/core";
 import { IconListSearch, IconLock } from "@tabler/icons-react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 import { WaveAlert } from "@/components/wave-alert";
 import { queries } from "@/lib/api/queries";
-import type { Poll, PollResponsesCursor } from "@/types";
+import { useRealtime } from "@/lib/realtime-client";
+import type { Poll, PollResponsesCursor, PollResponsesPage } from "@/types";
 import { PAGINATION_LIMIT } from "@/utils/constants";
 
 interface Props {
@@ -22,6 +27,7 @@ interface Props {
 }
 
 export function TextResponses({ poll, is_owner_view }: Props) {
+  const query_client = useQueryClient();
   const query = useInfiniteQuery({
     queryKey: queries.responses.key(poll.id),
     enabled: is_owner_view,
@@ -30,6 +36,45 @@ export function TextResponses({ poll, is_owner_view }: Props) {
       queries.responses.fn(poll.id, pageParam ?? undefined),
     getNextPageParam(last_page) {
       return last_page.next_cursor ?? undefined;
+    }
+  });
+
+  useRealtime({
+    channels: [`poll:${poll.id}`],
+    events: ["poll.new_comment"],
+    enabled: is_owner_view && poll.type === "text",
+    onData({ data }) {
+      query_client.setQueryData<InfiniteData<PollResponsesPage>>(
+        queries.responses.key(poll.id),
+        (cached) => {
+          if (!cached?.pages.length) return cached;
+
+          const first_page = cached.pages[0];
+
+          if (!first_page) return cached;
+
+          const already_present = cached.pages.some((page) =>
+            page.items.some((item) => item.id === data.id)
+          );
+
+          if (already_present) return cached;
+
+          const next_first_items = [data, ...first_page.items].slice(
+            0,
+            first_page.limit
+          );
+
+          const next_first_page: PollResponsesPage = {
+            ...first_page,
+            items: next_first_items
+          };
+
+          return {
+            ...cached,
+            pages: [next_first_page, ...cached.pages.slice(1)]
+          };
+        }
+      );
     }
   });
 
