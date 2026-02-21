@@ -5,6 +5,10 @@ export type PollRow = Tables<"polls">;
 
 export type OptionRow = Tables<"options">;
 
+export type VoteRow = Tables<"votes">;
+
+export type ReactionRow = Tables<"reactions">;
+
 export type PollWithOptions = PollRow & { options?: OptionRow[] };
 
 export type AnyObject = Record<string, any>;

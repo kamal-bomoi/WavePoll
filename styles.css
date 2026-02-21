@@ -34,6 +34,16 @@ body {
   backdrop-filter: blur(8px);
 }
 
+[data-sonner-toaster] [data-sonner-toast][data-type="loading"].wave-toast {
+  background: color-mix(
+    in srgb,
+    var(--mantine-color-indigo-2) 72%,
+    transparent
+  );
+  border-color: var(--mantine-color-indigo-4);
+  color: var(--mantine-color-indigo-8);
+}
+
 [data-sonner-toaster] [data-sonner-toast][data-type="success"].wave-toast {
   background: color-mix(in srgb, var(--mantine-color-green-2) 72%, transparent);
   border-color: var(--mantine-color-green-4);

@@ -7,7 +7,7 @@ import { IconLink } from "@tabler/icons-react";
 export function EmbedSnippet({ poll_id }: { poll_id: string }) {
   const clipboard = useClipboard({ timeout: 1500 });
 
-  const snippet = `<iframe src="${window.location.origin}/embed/${poll_id}" title="WavePoll" width="100%" height="720" style="border:0;border-radius:16px;overflow:hidden;"></iframe>`;
+  const snippet = `<iframe src="${window.location.origin}/embed/${poll_id}" title="WavePoll" width="500" height="400" style="border:0;border-radius:16px;overflow:hidden;"></iframe>`;
 
   return (
     <Stack gap="xs">

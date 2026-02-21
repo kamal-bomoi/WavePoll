@@ -2,7 +2,6 @@ import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "../styles.css";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
-import { IconBrandGithub } from "@tabler/icons-react";
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { Providers } from "./providers";
@@ -37,20 +36,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers>
-          {children}
-          <footer className="wave-footer">
-            <a
-              href="https://github.com/kamalyusuf/WavePoll"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="WavePoll GitHub repository"
-              title="WavePoll GitHub repository"
-            >
-              <IconBrandGithub size={20} stroke={1.8} />
-            </a>
-          </footer>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

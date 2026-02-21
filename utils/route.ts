@@ -44,6 +44,7 @@ export interface RouteOptions<
     params?: ZodType<TParams>;
     query?: ZodType<TQuery>;
   }>;
+  headers?: HeadersInit;
 }
 
 export function route<
@@ -88,9 +89,10 @@ export function route<
 
       const status = options?.status ?? 200;
 
-      if (status === 204) return new Response(null, { status });
+      if (status === 204)
+        return new Response(null, { status, headers: options?.headers });
 
-      return NextResponse.json(response, { status });
+      return NextResponse.json(response, { status, headers: options?.headers });
     } catch (e) {
       const error = e as Error;
 

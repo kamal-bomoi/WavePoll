@@ -11,11 +11,12 @@ import {
   Text,
   Title
 } from "@mantine/core";
-import { IconChartBar, IconDownload, IconUser } from "@tabler/icons-react";
+import { IconChartBar, IconUser } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { SharePollButton } from "@/app/[poll_id]/share-poll-button";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll } from "@/types";
+import { ExportCSVButton } from "../export-csv-button";
 import { PollEndedAlert } from "../poll-ended-alert";
 import { PollTimeRemaining } from "../poll-time-remaining";
 import { EmbedSnippet } from "./embed-snippet";
@@ -151,29 +152,8 @@ export function PollResultContent({
           </Button>
           <SharePollButton />
         </Group>
-        <Button
-          variant="subtle"
-          leftSection={<IconDownload size={16} />}
-          onClick={() => download_csv(poll)}
-        >
-          Export CSV
-        </Button>
+        <ExportCSVButton poll={poll} has_ended={has_ended} />
       </Group>
     </Stack>
   );
-}
-
-function download_csv(poll: Poll) {
-  const rows = [
-    ["option", "votes"],
-    ...poll.options.map((option) => [option.value, `${option.votes}`])
-  ];
-  const csv = rows.map((row) => row.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const href = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = href;
-  anchor.download = `${poll.id}-breakdown.csv`;
-  anchor.click();
-  URL.revokeObjectURL(href);
 }

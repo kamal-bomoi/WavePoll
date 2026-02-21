@@ -7,7 +7,6 @@ import {
   Text,
   Textarea
 } from "@mantine/core";
-import { IconDownload } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { WaveAlert } from "@/components/wave-alert";
@@ -15,6 +14,7 @@ import { useMutation } from "@/hooks/use-mutation";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
+import { ExportCSVButton } from "./export-csv-button";
 import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
 import { SharePollButton } from "./share-poll-button";
@@ -182,29 +182,11 @@ export function VoteForm({
             >
               View results
             </Button>
-            <Button
-              variant="subtle"
-              leftSection={<IconDownload size={16} />}
-              onClick={() => download_csv(poll)}
-            >
-              Export CSV
-            </Button>
+
+            <ExportCSVButton poll={poll} has_ended={has_ended} />
           </Group>
         </Group>
       )}
     </Stack>
   );
-}
-
-function download_csv(poll: Poll) {
-  const headers = ["poll_id", "title", "type", "total_votes"];
-  const line = [poll.id, `"${poll.title}"`, poll.type, `${poll.total_votes}`];
-  const csv = `${headers.join(",")}\n${line.join(",")}`;
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const href = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = href;
-  anchor.download = `${poll.id}-results.csv`;
-  anchor.click();
-  URL.revokeObjectURL(href);
 }
