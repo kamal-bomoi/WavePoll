@@ -18,45 +18,12 @@ import { useParams } from "next/navigation";
 import { NewPollButton } from "@/components/new-poll-button";
 import { WaveAlert } from "@/components/wave-alert";
 import { WavePollHeader } from "@/components/wavepoll-header";
-import { usePollPresence } from "@/hooks/use-poll-presence";
-import { useQuery } from "@/hooks/use-query";
-import { useUpdateQuery } from "@/hooks/use-update-query";
-import { queries } from "@/lib/api/queries";
-import { useRealtime } from "@/lib/realtime-client";
-import type { Poll } from "@/types";
+import { usePollQuery } from "@/hooks/use-poll-query";
 import { VoteForm } from "./vote-form";
 
 export default function VotePollPage() {
   const params = useParams<{ poll_id: string }>();
-  const update_query = useUpdateQuery();
-  const query = useQuery("poll", [params.poll_id], {
-    enabled: !!params.poll_id
-  });
-
-  usePollPresence(query.data?.id);
-
-  useRealtime({
-    channels: [`poll:${params.poll_id}`],
-    events: ["poll.updated", "poll.presence"],
-    enabled: !!query.data?.id,
-    onData({ event, data }) {
-      if (event === "poll.updated") {
-        if (data.id !== params.poll_id) return;
-
-        update_query<Poll>(queries.poll.key(params.poll_id), (draft) => {
-          Object.assign(draft, data);
-        });
-      }
-
-      if (event === "poll.presence") {
-        if (data.poll_id !== params.poll_id) return;
-
-        update_query<Poll>(queries.poll.key(data.poll_id), (draft) => {
-          draft.presence = data.presence;
-        });
-      }
-    }
-  });
+  const query = usePollQuery(params.poll_id);
 
   if (query.isFetching)
     return (
