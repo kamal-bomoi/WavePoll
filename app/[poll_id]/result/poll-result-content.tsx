@@ -50,7 +50,7 @@ export function PollResultContent({
         </Badge>
         <Group gap={8}>
           <IconUser size={14} />
-          <Text size="sm">{poll.presence} viewers</Text>
+          <Text size="sm">{poll.presence || "-"} viewers</Text>
         </Group>
       </Group>
 

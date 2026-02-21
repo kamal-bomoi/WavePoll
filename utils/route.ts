@@ -96,7 +96,12 @@ export function route<
     } catch (e) {
       const error = e as Error;
 
-      if (env.NODE_ENV === "development") console.log(error);
+      if (
+        env.NODE_ENV === "development" &&
+        !(error instanceof ZodError) &&
+        !(error instanceof WavePollError)
+      )
+        console.log(error);
 
       if (error instanceof PostgrestError)
         return NextResponse.json<{ errors: ErrorProps[] }>(

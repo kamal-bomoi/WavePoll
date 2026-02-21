@@ -1,3 +1,4 @@
+import { isServer } from "@tanstack/react-query";
 import axios, { type AxiosInstance } from "axios";
 import { toast } from "sonner";
 import type { ApiError } from "@/types";
@@ -38,9 +39,17 @@ class Api {
 
   #interceptors(): void {
     this.#client.interceptors.response.use(undefined, (original: ApiError) => {
-      const { errors } = parse_api_error(original);
+      if (isServer) return Promise.reject(original);
 
-      errors.forEach((error) => void toast.error(error.message));
+      const should_toast =
+        typeof original.config?.meta?.toast === "function"
+          ? original.config.meta.toast(original)
+          : (original.config?.meta?.toast ?? true);
+
+      if (should_toast)
+        parse_api_error(original).errors.forEach((error) => {
+          toast.error(error.message);
+        });
 
       return Promise.reject(original);
     });

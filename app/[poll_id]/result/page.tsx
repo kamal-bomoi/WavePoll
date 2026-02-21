@@ -16,6 +16,7 @@ import { NewPollButton } from "@/components/new-poll-button";
 import { WaveAlert } from "@/components/wave-alert";
 import { WavePollHeader } from "@/components/wavepoll-header";
 import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
+import { usePollPresence } from "@/hooks/use-poll-presence";
 import { useQuery } from "@/hooks/use-query";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
@@ -31,16 +32,28 @@ export default function ResultPage() {
     enabled: !!params.poll_id
   });
 
+  usePollPresence(query.data?.id);
+
   useRealtime({
     channels: [`poll:${params.poll_id}`],
-    events: ["poll.updated"],
+    events: ["poll.updated", "poll.presence"],
     enabled: !!query.data?.id,
-    onData({ data }) {
-      if (data.id !== params.poll_id) return;
+    onData({ event, data }) {
+      if (event === "poll.updated") {
+        if (data.id !== params.poll_id) return;
 
-      update_query<Poll>(queries.poll.key(params.poll_id), (draft) => {
-        Object.assign(draft, data);
-      });
+        update_query<Poll>(queries.poll.key(params.poll_id), (draft) => {
+          Object.assign(draft, data);
+        });
+      }
+
+      if (event === "poll.presence") {
+        if (data.poll_id !== params.poll_id) return;
+
+        update_query<Poll>(queries.poll.key(data.poll_id), (draft) => {
+          draft.presence = data.presence;
+        });
+      }
     }
   });
 
