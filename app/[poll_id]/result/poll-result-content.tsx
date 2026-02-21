@@ -5,7 +5,6 @@ import {
   Button,
   Divider,
   Group,
-  Progress,
   SimpleGrid,
   Stack,
   Text,
@@ -125,18 +124,6 @@ export function PollResultContent({
           </Group>
         </Stack>
       )}
-
-      <Stack gap={6}>
-        <Group justify="space-between">
-          <Text size="sm" fw={600}>
-            Realtime ingestion progress
-          </Text>
-          <Text size="sm" c="dimmed">
-            92%
-          </Text>
-        </Group>
-        <Progress color="indigo" value={92} radius="xl" size="lg" animated />
-      </Stack>
 
       <EmbedSnippet poll_id={poll.id} />
 
