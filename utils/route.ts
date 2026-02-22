@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { PostgrestError } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import type { RequireAtLeastOne } from "type-fest";
@@ -96,12 +97,27 @@ export function route<
     } catch (e) {
       const error = e as Error;
 
-      if (
-        env.NODE_ENV === "development" &&
-        !(error instanceof ZodError) &&
-        !(error instanceof WavePollError)
-      )
-        console.log(error);
+      if (error instanceof WavePollError)
+        return NextResponse.json<{ errors: ErrorProps[] }>(
+          { errors: error.serialize() },
+          { status: error.status }
+        );
+
+      if (error instanceof ZodError)
+        return NextResponse.json<{ errors: ErrorProps[] }>(
+          { errors: WavePollError.Zod(error).serialize() },
+          { status: 422 }
+        );
+
+      if (env.NODE_ENV === "development") console.log(error);
+
+      Sentry.withScope((scope) => {
+        scope.setTag("layer", "route");
+        scope.setExtra("url", req.url);
+        scope.setExtra("method", req.method);
+
+        Sentry.captureException(error);
+      });
 
       if (error instanceof PostgrestError)
         return NextResponse.json<{ errors: ErrorProps[] }>(
@@ -116,18 +132,6 @@ export function route<
             ]
           },
           { status: 500 }
-        );
-
-      if (error instanceof ZodError)
-        return NextResponse.json<{ errors: ErrorProps[] }>(
-          { errors: WavePollError.Zod(error).serialize() },
-          { status: 422 }
-        );
-
-      if (error instanceof WavePollError)
-        return NextResponse.json<{ errors: ErrorProps[] }>(
-          { errors: error.serialize() },
-          { status: error.status }
         );
 
       return NextResponse.json<{ errors: ErrorProps[] }>(

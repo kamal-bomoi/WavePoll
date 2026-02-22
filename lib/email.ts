@@ -1,4 +1,5 @@
 import "server-only";
+import * as Sentry from "@sentry/nextjs";
 import { Resend } from "resend";
 import { env } from "@/env";
 import type { Poll } from "@/types";
@@ -21,14 +22,33 @@ export async function send_poll_ended_summary_email(poll: Poll): Promise<void> {
   const html = build_rich_html({ poll, result_url, top_options });
 
   try {
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: env.EMAIL_FROM,
       to: [poll.owner_email],
       subject,
       text,
       html
     });
-  } catch {}
+
+    if (error)
+      Sentry.withScope((scope) => {
+        scope.setExtra(
+          "message",
+          `Resend ErrorResponse. Send poll summary email to ${poll.owner_email} for ${poll.id}.`
+        );
+
+        Sentry.captureException(error);
+      });
+  } catch (e) {
+    Sentry.withScope((scope) => {
+      scope.setExtra(
+        "message",
+        `Send poll summary email to ${poll.owner_email} for ${poll.id}.`
+      );
+
+      Sentry.captureException(e);
+    });
+  }
 }
 
 function build_text_summary({

@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { type InferRealtimeEvents, Realtime } from "@upstash/realtime";
 import { z } from "zod";
 import { env } from "@/env";
@@ -32,6 +33,13 @@ export async function emit_poll_updated(poll: Poll): Promise<void> {
     await realtime.channel(`poll:${poll.id}`).emit("poll.updated", poll);
   } catch (error) {
     if (env.NODE_ENV === "development") console.error(error);
+
+    Sentry.captureException(error, {
+      tags: { emitter: "poll.updated" },
+      extra: {
+        poll_id: poll.id
+      }
+    });
   }
 }
 
@@ -45,6 +53,13 @@ export async function emit_poll_new_comment(
       .emit("poll.new_comment", response);
   } catch (error) {
     if (env.NODE_ENV === "development") console.error(error);
+
+    Sentry.captureException(error, {
+      tags: { emitter: "poll.new_comment" },
+      extra: {
+        poll_id
+      }
+    });
   }
 }
 
@@ -59,6 +74,13 @@ export async function emit_poll_presence(
     });
   } catch (error) {
     if (env.NODE_ENV === "development") console.error(error);
+
+    Sentry.captureException(error, {
+      tags: { emitter: "poll.presence" },
+      extra: {
+        poll_id
+      }
+    });
   }
 }
 
@@ -67,5 +89,12 @@ export async function emit_poll_ended(poll: Poll): Promise<void> {
     await realtime.channel(`poll:${poll.id}`).emit("poll.ended", poll);
   } catch (error) {
     if (env.NODE_ENV === "development") console.error(error);
+
+    Sentry.captureException(error, {
+      tags: { emitter: "poll.ended" },
+      extra: {
+        poll_id: poll.id
+      }
+    });
   }
 }

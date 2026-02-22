@@ -2,6 +2,7 @@ import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "../styles.css";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { Providers } from "./providers";
@@ -37,6 +38,8 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>{children}</Providers>
+        {process.env.NODE_ENV === "production" && <Analytics />}
+        <Analytics />
       </body>
     </html>
   );

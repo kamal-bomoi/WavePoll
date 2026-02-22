@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
@@ -111,14 +112,21 @@ export async function GET(
   } catch (e) {
     const error = e as Error;
 
-    if (env.NODE_ENV === "development" && !(error instanceof WavePollError))
-      console.log(error);
-
     if (error instanceof WavePollError)
       return NextResponse.json(
         { errors: error.serialize() },
         { status: error.status }
       );
+
+    if (env.NODE_ENV === "development") console.log(error);
+
+    Sentry.withScope((scope) => {
+      scope.setTag("layer", "default");
+      scope.setExtra("url", req.url);
+      scope.setExtra("method", req.method);
+
+      Sentry.captureException(error);
+    });
 
     return NextResponse.json(
       {

@@ -12,15 +12,24 @@ import {
   Text,
   Title
 } from "@mantine/core";
+import * as Sentry from "@sentry/nextjs";
 import { IconRefresh } from "@tabler/icons-react";
+// biome-ignore lint/suspicious/noShadowRestrictedNames: <>
+import type Error from "next/error";
+import { useEffect } from "react";
 import { theme } from "@/mantine/theme";
 
 export default function GlobalError({
+  error,
   reset
 }: {
-  error: Error & { digest?: string };
+  error: Error;
   reset: () => void;
 }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <html lang="en">
       <head>

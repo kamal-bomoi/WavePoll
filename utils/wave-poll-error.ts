@@ -27,7 +27,7 @@ export class WavePollError extends Error {
     return new WavePollError(400, error);
   }
 
-  static Unauthorrized(error: ErrorParam = "Not authorized") {
+  static Unauthorrized(error: ErrorParam = "Not authorized.") {
     return new WavePollError(401, error);
   }
 
@@ -54,7 +54,7 @@ export class WavePollError extends Error {
   }
 
   static InternalServerError(
-    error: ErrorParam = "An internal server error occurred"
+    error: ErrorParam = "An internal server error occurred."
   ) {
     return new WavePollError(500, error);
   }

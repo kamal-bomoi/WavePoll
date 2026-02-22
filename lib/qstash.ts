@@ -1,4 +1,5 @@
 import "server-only";
+import * as Sentry from "@sentry/nextjs";
 import { Client } from "@upstash/qstash";
 import { env } from "@/env";
 import type { Poll } from "@/types";
@@ -25,7 +26,14 @@ export async function schedule_poll_end(poll: Poll) {
       notBefore: not_before,
       deduplicationId: `poll-ended:${poll.id}`
     });
-  } catch {}
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { handler: "schedule_poll_end" },
+      extra: {
+        poll_id: poll.id
+      }
+    });
+  }
 }
 
 export function is_qstash_signature_configured(): boolean {
