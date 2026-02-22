@@ -34,7 +34,7 @@ export async function send_poll_ended_summary_email(poll: Poll): Promise<void> {
       Sentry.withScope((scope) => {
         scope.setExtra(
           "message",
-          `Resend ErrorResponse. Send poll summary email to ${poll.owner_email} for ${poll.id}.`
+          `Resend ErrorResponse. Failed to send poll summary email for poll ${poll.id}.`
         );
 
         Sentry.captureException(error);
@@ -43,7 +43,7 @@ export async function send_poll_ended_summary_email(poll: Poll): Promise<void> {
     Sentry.withScope((scope) => {
       scope.setExtra(
         "message",
-        `Send poll summary email to ${poll.owner_email} for ${poll.id}.`
+        `Failed to send poll summary email for poll ${poll.id}.`
       );
 
       Sentry.captureException(e);

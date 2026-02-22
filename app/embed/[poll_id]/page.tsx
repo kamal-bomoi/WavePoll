@@ -25,7 +25,7 @@ export default function EmbedPollPage() {
     enabled: !!params.poll_id
   });
 
-  if (query.isFetching)
+  if (query.isLoading)
     return (
       <Center p="md">
         <Loader color="indigo" size="sm" />
@@ -37,10 +37,6 @@ export default function EmbedPollPage() {
   if (!query.data) return null;
 
   const poll = query.data;
-  const total_votes = poll.options.reduce<number>(
-    (acc, cur) => acc + cur.votes,
-    0
-  );
 
   return (
     <Paper p="md" radius="md" withBorder>
@@ -75,7 +71,7 @@ export default function EmbedPollPage() {
                 <PollOption
                   key={option.id}
                   option={option}
-                  total={total_votes}
+                  total={poll.total_votes}
                 />
               ))}
             </Stack>

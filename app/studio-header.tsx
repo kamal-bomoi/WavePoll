@@ -18,16 +18,14 @@ export function StudioHeader({
         <Title order={1} style={{ maxWidth: 760 }}>
           Build premium polls
         </Title>
-        <Group wrap="wrap">
-          <Button
-            type="submit"
-            leftSection={<IconDeviceFloppy size={16} />}
-            disabled={!can_submit || creating}
-            loading={creating}
-          >
-            {status === "live" ? "Publish live" : "Save draft"}
-          </Button>
-        </Group>
+        <Button
+          type="submit"
+          leftSection={<IconDeviceFloppy size={16} />}
+          disabled={!can_submit || creating}
+          loading={creating}
+        >
+          {status === "live" ? "Publish live" : "Save draft"}
+        </Button>
       </Group>
     </Stack>
   );

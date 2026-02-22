@@ -57,8 +57,6 @@ export async function get_polls(
   supabase: SupabaseClient<Database>,
   poll_ids: string[]
 ): Promise<Poll[]> {
-  if (!poll_ids.length) return [];
-
   const { data: rows, error } = await supabase
     .from("polls_with_details")
     .select("*")
@@ -87,8 +85,8 @@ function map_poll(row: PollWithDetailsRow): Poll {
   return {
     id: row.id,
     title: row.title,
-    type: row.type as Poll["type"],
-    status: row.status as Poll["status"],
+    type: row.type,
+    status: row.status,
     description: row.description,
     owner_email: row.owner_email,
     end_at: row.end_at,
@@ -125,7 +123,7 @@ function build_reaction_breakdown({
   const counts = new Map<string, number>(enabled.map((emoji) => [emoji, 0]));
 
   for (const emoji of reactions)
-    counts.set(emoji, (counts.get(emoji) ?? 0) + 1);
+    if (counts.has(emoji)) counts.set(emoji, counts.get(emoji)! + 1);
 
   return Array.from(counts.entries()).map(([emoji, count]) => ({
     emoji,

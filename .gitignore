@@ -43,6 +43,5 @@ yarn-error.log*
 .vercel
 
 todo
-undefined
 ignore.txt
 **/.temp

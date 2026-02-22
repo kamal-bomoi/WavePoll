@@ -34,6 +34,15 @@ export default function StudioPage() {
       reaction_emojis: undefined
     },
     validate: {
+      title: (value) => {
+        const trimmed = value.trim();
+
+        if (!trimmed) return "Title is required.";
+
+        if (trimmed.length < 3) return "Title must be at least 3 characters.";
+
+        return null;
+      },
       options: (value, values) => {
         if (values.type !== "single") return null;
 
@@ -102,13 +111,7 @@ export default function StudioPage() {
             <StudioHeader
               creating={mutation.isPending}
               status={form.values.status}
-              can_submit={
-                !!form.values.title.trim() &&
-                (form.values.type !== "single" ||
-                  (form.values.options ?? []).filter(
-                    (option) => option.trim().length > 0
-                  ).length >= 2)
-              }
+              can_submit
             />
 
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
@@ -131,5 +134,10 @@ export default function StudioPage() {
 }
 
 function to_iso(value: string): string {
-  return new Date(value).toISOString();
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime()))
+    throw new Error(`Invalid date value: ${value}`);
+
+  return date.toISOString();
 }

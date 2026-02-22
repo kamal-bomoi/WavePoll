@@ -14,8 +14,6 @@ export class WavePollError extends Error {
       typeof param === "string" ? param : (param?.message ?? "Unknown error")
     );
 
-    Object.setPrototypeOf(this, WavePollError.prototype);
-
     this.name = "WavePollError";
     this.status = status;
     this.#error = error;
@@ -27,7 +25,7 @@ export class WavePollError extends Error {
     return new WavePollError(400, error);
   }
 
-  static Unauthorrized(error: ErrorParam = "Not authorized.") {
+  static Unauthorized(error: ErrorParam = "Not authorized.") {
     return new WavePollError(401, error);
   }
 

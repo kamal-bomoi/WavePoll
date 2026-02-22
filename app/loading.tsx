@@ -1,11 +1,9 @@
-import { Center, Loader, Stack } from "@mantine/core";
+import { Center, Loader } from "@mantine/core";
 
 export default function Loading() {
   return (
     <Center className="wave-page">
-      <Stack align="center" gap="sm">
-        <Loader color="indigo" size="md" />
-      </Stack>
+      <Loader color="indigo" size="md" />
     </Center>
   );
 }

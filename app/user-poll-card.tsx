@@ -8,7 +8,7 @@ import {
   Stack,
   Text
 } from "@mantine/core";
-import { IconExternalLink } from "@tabler/icons-react";
+import { IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import type { Poll } from "@/types";
 import { is_poll_ended } from "@/utils/poll";
@@ -61,7 +61,7 @@ export function UserPollCard({ poll }: { poll: Poll }) {
             component={Link}
             size="compact-sm"
             variant="subtle"
-            leftSection={<IconExternalLink size={14} />}
+            leftSection={<IconEye size={14} />}
             href={`/${poll.id}/result` as any}
           >
             Open
@@ -77,5 +77,8 @@ function format_end_at(value: string): string {
 
   if (Number.isNaN(date.getTime())) return "Invalid end time";
 
-  return `Ends ${date.toLocaleString()}`;
+  return `Ends ${date.toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  })}`;
 }

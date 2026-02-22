@@ -17,7 +17,7 @@ export default function PollLayout({ children }: { children: ReactNode }) {
   usePollPresence(query.data?.id);
 
   useRealtime({
-    channels: [`poll:${query.data?.id}`],
+    channels: [`poll:${params.poll_id}`],
     events: ["poll.updated", "poll.presence", "poll.ended"],
     enabled: !!query.data?.id,
     onData({ event, data }) {

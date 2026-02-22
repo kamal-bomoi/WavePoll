@@ -24,7 +24,7 @@ export default function ResultPage() {
   const is_owner_view = !!poll_ids?.includes(params.poll_id);
   const query = usePollQuery(params.poll_id);
 
-  if (query.isFetching)
+  if (query.isLoading)
     return (
       <Center className="wave-page">
         <Stack align="center" gap="sm">

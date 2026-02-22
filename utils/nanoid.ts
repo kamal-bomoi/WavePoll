@@ -21,6 +21,8 @@ export const nanoid = ({
       ? charsets
       : [...new Set(charsets)].map((charset) => CHARSETS[charset]).join("");
 
+  if (!alphabet) throw new Error("nonoid: alphabet cannot be empty");
+
   if (!presets.has(alphabet)) presets.set(alphabet, customAlphabet(alphabet));
 
   return presets.get(alphabet)!(length);

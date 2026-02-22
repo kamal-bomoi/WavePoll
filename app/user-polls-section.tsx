@@ -11,7 +11,7 @@ export function UserPollsSection() {
     enabled: !!poll_ids
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: set_poll_ids is a stable state setter
   useEffect(() => {
     if (data) set_poll_ids(data.map((poll) => poll.id));
   }, [data]);
@@ -31,9 +31,13 @@ export function UserPollsSection() {
           </AbsoluteCenter>
         )}
         <Stack gap="lg">
-          {data?.map((poll) => (
-            <UserPollCard key={poll.id} poll={poll} />
-          ))}
+          {data && !data?.length ? (
+            <Text c="dimmed" size="sm" ta="center">
+              You haven't created any polls yet.
+            </Text>
+          ) : (
+            data?.map((poll) => <UserPollCard key={poll.id} poll={poll} />)
+          )}
         </Stack>
       </Stack>
     </Stack>

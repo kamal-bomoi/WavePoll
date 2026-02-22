@@ -8,7 +8,7 @@ export function useUpdateQuery() {
   return useCallback(
     <T>(key: QueryKey, updater: (draft: Draft<T>) => void) => {
       client.setQueryData<T>(key, (cached) => {
-        if (!cached) return undefined;
+        if (cached === undefined) return undefined;
 
         return produce(cached, (draft) => {
           updater(draft);

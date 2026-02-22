@@ -77,7 +77,9 @@ function download_csv(poll_id: string, cb: () => void) {
       const anchor = document.createElement("a");
       anchor.href = href;
       anchor.download = `${poll_id}-results.csv`;
+      document.body.appendChild(anchor);
       anchor.click();
+      document.body.removeChild(anchor);
       URL.revokeObjectURL(href);
     })(),
     {

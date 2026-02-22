@@ -1647,7 +1647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/nextjs@npm:10":
+"@sentry/nextjs@npm:^10.0.0":
   version: 10.39.0
   resolution: "@sentry/nextjs@npm:10.39.0"
   dependencies:
@@ -4644,7 +4644,7 @@ __metadata:
     "@mantine/dates": "npm:^8.3.15"
     "@mantine/form": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
-    "@sentry/nextjs": "npm:10"
+    "@sentry/nextjs": "npm:^10.0.0"
     "@supabase/supabase-js": "npm:^2.97.0"
     "@t3-oss/env-nextjs": "npm:^0.13.10"
     "@tabler/icons-react": "npm:^3.36.1"

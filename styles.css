@@ -20,8 +20,16 @@ body {
 body {
   color: var(--wave-ink);
   background:
-    radial-gradient(circle at 10% 10%, rgba(79, 70, 229, 0.2), transparent 34%),
-    radial-gradient(circle at 90% 0%, rgba(217, 227, 90, 0.18), transparent 35%),
+    radial-gradient(
+      circle at 10% 10%,
+      color-mix(in srgb, var(--wave-primary) 20%, transparent),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 90% 0%,
+      color-mix(in srgb, var(--wave-secondary) 18%, transparent),
+      transparent 35%
+    ),
     linear-gradient(180deg, #f4f2ff, var(--wave-bg));
 }
 

@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/nextjs";
-import { PostgrestError } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import type { RequireAtLeastOne } from "type-fest";
 import { ZodError, type ZodType } from "zod";
@@ -77,13 +76,23 @@ export function route<
       } else {
         const has_body = ["POST", "PUT", "PATCH"].includes(req.method);
 
-        body = (has_body ? await req.json() : {}) as TBody;
+        if (has_body) {
+          try {
+            body = (await req.json()) as TBody;
+          } catch {
+            return NextResponse.json<{ errors: ErrorProps[] }>(
+              { errors: [{ message: "Invalid JSON in request body" }] },
+              { status: 422 }
+            );
+          }
+        } else {
+          body = {} as TBody;
+        }
         params = (ctx.params ? await ctx.params : {}) as TParams;
         query = Object.fromEntries(
           req.nextUrl.searchParams.entries()
         ) as TQuery;
       }
-
       const context = { body, params, query, supabase: Supabase() };
 
       const response = await handler(context, req);
@@ -118,21 +127,6 @@ export function route<
 
         Sentry.captureException(error);
       });
-
-      if (error instanceof PostgrestError)
-        return NextResponse.json<{ errors: ErrorProps[] }>(
-          {
-            errors: [
-              {
-                message:
-                  process.env.NODE_ENV === "development"
-                    ? error.message
-                    : "An internal server error occurred"
-              }
-            ]
-          },
-          { status: 500 }
-        );
 
       return NextResponse.json<{ errors: ErrorProps[] }>(
         {
@@ -172,10 +166,20 @@ async function validate<
 ): Promise<ValidationResult<TBody, TParams, TQuery>> {
   const has_body = ["POST", "PUT", "PATCH"].includes(req.method);
 
-  const raw_body = has_body ? await req.json() : {};
+  let raw_body: unknown = {};
+  if (has_body) {
+    try {
+      raw_body = await req.json();
+    } catch {
+      return {
+        ok: false,
+        errors: [{ message: "Invalid JSON in request body", source: "body" }]
+      };
+    }
+  }
+
   const raw_params = ctx.params ? await ctx.params : {};
   const raw_query = Object.fromEntries(req.nextUrl.searchParams.entries());
-
   const results = await Promise.all([
     validate_segment("body", options?.schema?.body, raw_body),
     validate_segment("params", options?.schema?.params, raw_params),

@@ -143,7 +143,7 @@ export function VoteForm({
           {reaction_options.map((emoji) => (
             <Button
               key={emoji}
-              disabled={voting_locked || has_voted}
+              disabled={voting_locked || has_voted || mutation.isPending}
               size="compact-md"
               variant={reaction === emoji ? "filled" : "light"}
               onClick={() =>
@@ -152,9 +152,10 @@ export function VoteForm({
             >
               {emoji}
             </Button>
-          ))}
+          ))}{" "}
           <Text size="sm" c="dimmed">
-            {poll.reactions_count + (reaction ? 1 : 0)} reactions
+            {poll.reactions_count} reactions
+            {reaction && !has_voted && <> (+1 pending)</>}
           </Text>
         </Group>
       )}
@@ -181,7 +182,7 @@ export function VoteForm({
             >
               Submit vote
             </Button>
-            <SharePollButton disabled={voting_locked} />
+            <SharePollButton disabled={!is_live} />
           </Group>
 
           <Group wrap="wrap">

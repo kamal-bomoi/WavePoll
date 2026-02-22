@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Poll } from "@/types";
 import { is_poll_ended } from "@/utils/poll";
 
@@ -9,5 +9,12 @@ export function usePollEndState(
 
   const has_ended = ended || is_poll_ended(poll);
 
-  return [has_ended, () => set_ended(true)];
+  // biome-ignore lint/correctness/useExhaustiveDependencies: _
+  useEffect(() => {
+    set_ended(false);
+  }, [poll.id]);
+
+  const end = useCallback(() => set_ended(true), []);
+
+  return [has_ended, end];
 }

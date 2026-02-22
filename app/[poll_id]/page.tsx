@@ -25,7 +25,7 @@ export default function VotePollPage() {
   const params = useParams<{ poll_id: string }>();
   const query = usePollQuery(params.poll_id);
 
-  if (query.isFetching)
+  if (query.isLoading)
     return (
       <Center className="wave-page">
         <Stack align="center" gap="sm">

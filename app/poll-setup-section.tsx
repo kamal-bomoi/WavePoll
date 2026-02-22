@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: <> */
 import {
   ActionIcon,
   Card,
@@ -19,6 +18,7 @@ import {
   IconPlus,
   IconTrash
 } from "@tabler/icons-react";
+import dayjs from "dayjs";
 import type { StudioForm } from "@/app/page";
 import type { PollType } from "@/types";
 
@@ -82,8 +82,8 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
               <IconPlus size={16} />
             </ActionIcon>
           </Group>
-          {form.values.options?.map((_, index) => (
-            <Group key={`option-${index}`} wrap="nowrap" align="end">
+          {form.values.options?.map((value, index) => (
+            <Group key={`option-${value}-${index}`} wrap="nowrap" align="end">
               <TextInput
                 style={{ flex: 1 }}
                 placeholder={`Option ${index + 1}`}
@@ -109,12 +109,12 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
 
       {form.values.type === "rating" && (
         <Slider
-          labelAlwaysOn
           min={1}
           max={5}
           step={1}
           value={5}
           marks={[1, 2, 3, 4, 5].map((value) => ({ value, label: `${value}` }))}
+          mb="md"
         />
       )}
 
@@ -134,6 +134,8 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
         label="End time"
         required
         valueFormat="MMM D, YYYY h:mm A"
+        minDate={new Date()}
+        maxDate={dayjs().add(1, "week").toDate()}
         {...form.getInputProps("end_at")}
       />
     </Stack>

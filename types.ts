@@ -58,8 +58,6 @@ export type Poll = Pick<
   | "created_at"
   | "updated_at"
 > & {
-  type: PollType;
-  status: PollStatus;
   owner_email?: string | null;
   end_at: string;
   reaction_emojis?: string[] | null;

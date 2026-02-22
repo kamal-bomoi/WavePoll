@@ -4,7 +4,7 @@ export function parse_api_error(error: ApiError): {
   errors: ErrorProps[];
   map: Record<string, string>;
 } {
-  if (!error.response?.data.errors)
+  if (!error.response?.data?.errors)
     return {
       errors: [{ message: error.message }],
       map: {}

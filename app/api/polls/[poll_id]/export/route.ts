@@ -22,7 +22,10 @@ export async function GET(
 
     const requester_ip = get_requester_ip(req);
 
-    if (requester_ip) await ratelimit(poll_id, requester_ip);
+    if (!requester_ip)
+      throw WavePollError.BadRequest("Unable to determine client IP address.");
+
+    await ratelimit(poll_id, requester_ip);
 
     const supabase = Supabase();
 

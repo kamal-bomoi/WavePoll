@@ -19,7 +19,6 @@ import { WaveAlert } from "@/components/wave-alert";
 import { queries } from "@/lib/api/queries";
 import { useRealtime } from "@/lib/realtime-client";
 import type { Poll, PollResponsesCursor, PollResponsesPage } from "@/types";
-import { PAGINATION_LIMIT } from "@/utils/constants";
 
 interface Props {
   poll: Poll;
@@ -136,7 +135,7 @@ export function TextResponses({ poll, is_owner_view }: Props) {
               loading={query.isFetchingNextPage}
               onClick={() => void query.fetchNextPage()}
             >
-              Load {PAGINATION_LIMIT} more
+              Load more
             </Button>
           )}
         </>

@@ -14,6 +14,24 @@ type WaveAlertType = "info" | "success" | "warning" | "error";
 
 type MessageInput = string | string[] | ApiError | Error;
 
+const TypeProps: Record<
+  WaveAlertType,
+  { color: string; icon: ReactNode; title: string }
+> = {
+  success: {
+    color: "teal",
+    title: "Success",
+    icon: <IconCircleCheck size={24} />
+  },
+  warning: {
+    color: "orange",
+    title: "Warning",
+    icon: <IconAlertTriangle size={24} />
+  },
+  error: { color: "red", title: "Error", icon: <IconAlertCircle size={24} /> },
+  info: { color: "indigo", title: "Info", icon: <IconInfoCircle size={24} /> }
+};
+
 export function WaveAlert({
   message,
   type,
@@ -27,7 +45,7 @@ export function WaveAlert({
 
   if (!messages.length) return null;
 
-  const props = type_props(type);
+  const props = TypeProps[type];
 
   return (
     <Alert
@@ -68,42 +86,4 @@ function normalize_messages(input: MessageInput): string[] {
     return parse_api_error(input).errors.map((error) => error.message);
 
   return [input.message];
-}
-
-function type_props(type: WaveAlertType): {
-  color: string;
-  icon: ReactNode;
-  title: string;
-} {
-  const size = 24;
-
-  if (type === "success")
-    return {
-      color: "teal",
-      title: "Success",
-      icon: <IconCircleCheck size={size} />
-    };
-
-  if (type === "warning")
-    return {
-      color: "orange",
-      title: "Warning",
-      icon: <IconAlertTriangle size={size} />
-    };
-
-  if (type === "error")
-    return {
-      color: "red",
-      title: "Error",
-      icon: <IconAlertCircle size={size} />
-    };
-
-  if (type === "info")
-    return {
-      color: "indigo",
-      title: "Info",
-      icon: <IconInfoCircle size={size} />
-    };
-
-  throw new Error(`Invalid alert type: "${type}".`);
 }

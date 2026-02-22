@@ -49,14 +49,18 @@ export function usePollPresence(poll_id: string | undefined): void {
 }
 
 function get_or_create_viewer_id(): string {
-  const existing = window.localStorage.getItem(VIEWER_ID_KEY);
+  try {
+    const existing = window.localStorage.getItem(VIEWER_ID_KEY);
 
-  if (existing) return existing;
+    if (existing) return existing;
 
-  const value = nanoid();
-  window.localStorage.setItem(VIEWER_ID_KEY, value);
+    const value = nanoid();
+    window.localStorage.setItem(VIEWER_ID_KEY, value);
 
-  return value;
+    return value;
+  } catch {
+    return nanoid();
+  }
 }
 
 async function send_presence({

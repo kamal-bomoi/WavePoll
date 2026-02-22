@@ -2,12 +2,18 @@
 
 import { Button, Code, Stack, Text } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
-import { IconLink } from "@tabler/icons-react";
+import { IconClipboard } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
 export function EmbedSnippet({ poll_id }: { poll_id: string }) {
   const clipboard = useClipboard({ timeout: 1500 });
+  const [snippet, set_snippet] = useState("");
 
-  const snippet = `<iframe src="${window.location.origin}/embed/${poll_id}" title="WavePoll" width="500" height="400" style="border:0;border-radius:16px;overflow:hidden;"></iframe>`;
+  useEffect(() => {
+    set_snippet(
+      `<iframe src="${window.location.origin}/embed/${poll_id}" title="WavePoll" width="500" height="400" style="border:0;border-radius:16px;overflow:hidden;"></iframe>`
+    );
+  }, [poll_id]);
 
   return (
     <Stack gap="xs">
@@ -16,7 +22,7 @@ export function EmbedSnippet({ poll_id }: { poll_id: string }) {
       </Text>
       <Code block>{snippet}</Code>
       <Button
-        leftSection={<IconLink size={16} />}
+        leftSection={<IconClipboard size={16} />}
         variant="light"
         onClick={() => clipboard.copy(snippet)}
       >

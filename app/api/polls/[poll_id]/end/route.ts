@@ -37,7 +37,10 @@ async function handler(
     if (!is_poll_ended(poll)) return Response.json({ ok: true });
 
     const lock_key = `poll:ended:emitted:${poll.id}`;
-    const created = await redis.setnx(lock_key, "1");
+    const created = await redis.set(lock_key, "1", {
+      nx: true,
+      ex: IDEMPOTENCY_TTL_SECONDS
+    });
 
     if (!created) return Response.json({ ok: true });
 

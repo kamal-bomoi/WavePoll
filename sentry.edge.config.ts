@@ -5,13 +5,14 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  debug: false,
-  tracesSampleRate: 1,
-  enableLogs: true,
-  integrations: [
-    Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] })
-  ]
-});
+if (process.env.NEXT_PUBLIC_SENTRY_DSN)
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    environment: process.env.NODE_ENV,
+    debug: false,
+    tracesSampleRate: 1,
+    enableLogs: true,
+    integrations: [
+      Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] })
+    ]
+  });

@@ -148,7 +148,9 @@ async function get_voter_key(): Promise<string> {
   const signed = extract_signed_voter_key(from_cookie);
 
   if (from_cookie && !signed)
-    throw WavePollError.BadRequest("Invalid session. Please retry.");
+    throw WavePollError.BadRequest(
+      "Invalid session. Please clear your cookies and try again."
+    );
 
   const value = signed ?? nanoid();
 

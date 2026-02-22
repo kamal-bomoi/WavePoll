@@ -39,8 +39,7 @@ useQuery.options = <T extends QueryKey>(
     },
     enabled:
       typeof options?.enabled === "function"
-        ? (query) =>
-            !isServer && (options.enabled as (query: object) => boolean)(query)
+        ? (q) => !isServer && (options.enabled as (query: object) => boolean)(q)
         : !isServer && (options?.enabled ?? true)
   };
 };

@@ -4,20 +4,21 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  debug: false,
-  tracesSampleRate: 1,
-  enableLogs: true,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    Sentry.replayIntegration({
-      maskAllText: true,
-      blockAllMedia: true
-    }),
-    Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] })
-  ]
-});
+if (process.env.NEXT_PUBLIC_SENTRY_DSN)
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    debug: false,
+    tracesSampleRate: 1,
+    enableLogs: true,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    integrations: [
+      Sentry.replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true
+      }),
+      Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] })
+    ]
+  });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

@@ -94,6 +94,8 @@ export const GET = route<undefined, Record<string, string>, { ids: string }>(
   async ({ query, supabase }) => {
     const ids = query.ids.split(",");
 
+    if (!ids.length) return [];
+
     return get_polls(supabase, ids);
   },
   {

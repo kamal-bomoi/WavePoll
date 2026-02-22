@@ -14,7 +14,12 @@ import type { StudioForm } from "@/app/page";
 import { MAX_REACTION_EMOJIS } from "@/utils/constants";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
-  ssr: false
+  ssr: false,
+  loading: () => (
+    <Text size="sm" c="dimmed" p="md" ta="center">
+      Loading...
+    </Text>
+  )
 });
 
 export function LiveBehaviorSection({ form }: { form: StudioForm }) {

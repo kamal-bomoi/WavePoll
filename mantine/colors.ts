@@ -98,16 +98,16 @@ export const colors: MantineThemeOverride["colors"] = {
     "#134E4A"
   ],
   green: [
-    "#f0fdf4",
-    "#dcfce7",
-    "#bbf7d0",
-    "#86efac",
-    "#4ade80",
-    "#22c55e",
-    "#16a34a",
-    "#15803d",
+    "#F0FDF4",
+    "#DCFCE7",
+    "#BBF7D0",
+    "#86EFAC",
+    "#4ADE80",
+    "#22C55E",
+    "#16A34A",
+    "#15803D",
     "#166534",
-    "#14532d"
+    "#14532D"
   ],
   lime: [
     "#F7FEE7",
@@ -146,35 +146,35 @@ export const colors: MantineThemeOverride["colors"] = {
     "#7C2D12"
   ],
   slate: [
-    "#f8fafc",
-    "#f1f5f9",
-    "#e2e8f0",
-    "#cbd5e1",
-    "#94a3b8",
-    "#64748b",
+    "#F8FAFC",
+    "#F1F5F9",
+    "#E2E8F0",
+    "#CBD5E1",
+    "#94A3B8",
+    "#64748B",
     "#475569",
     "#334155",
-    "#1e293b",
-    "#0f172a"
+    "#1E293B",
+    "#0F172A"
   ],
   zinc: [
-    "#fafafa",
-    "#f4f4f5",
-    "#e4e4e7",
-    "#d4d4d8",
-    "#a1a1aa",
-    "#71717a",
-    "#52525b",
-    "#3f3f46",
-    "#27272a",
-    "#18181b"
+    "#FAFAFA",
+    "#F4F4F5",
+    "#E4E4E7",
+    "#D4D4D8",
+    "#A1A1AA",
+    "#71717A",
+    "#52525B",
+    "#3F3F46",
+    "#27272A",
+    "#18181B"
   ],
   neutral: [
-    "#fafafa",
-    "#f5f5f5",
-    "#e5e5e5",
-    "#d4d4d4",
-    "#a3a3a3",
+    "#FAFAFA",
+    "#F5F5F5",
+    "#E5E5E5",
+    "#D4D4D4",
+    "#A3A3A3",
     "#737373",
     "#525252",
     "#404040",
@@ -182,15 +182,15 @@ export const colors: MantineThemeOverride["colors"] = {
     "#171717"
   ],
   purple: [
-    "#faf5ff",
-    "#f3e8ff",
-    "#e9d5ff",
-    "#d8b4fe",
-    "#c084fc",
-    "#a855f7",
-    "#9333ea",
-    "#7e22ce",
-    "#6b21a8",
-    "#581c87"
+    "#FAF5FF",
+    "#F3E8FF",
+    "#E9D5FF",
+    "#D8B4FE",
+    "#C084FC",
+    "#A855F7",
+    "#9333EA",
+    "#7E22CE",
+    "#6B21A8",
+    "#581C87"
   ]
 };

@@ -14,8 +14,6 @@ import {
 } from "@mantine/core";
 import * as Sentry from "@sentry/nextjs";
 import { IconRefresh } from "@tabler/icons-react";
-// biome-ignore lint/suspicious/noShadowRestrictedNames: <>
-import type Error from "next/error";
 import { useEffect } from "react";
 import { theme } from "@/mantine/theme";
 
@@ -23,7 +21,7 @@ export default function GlobalError({
   error,
   reset
 }: {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
   useEffect(() => {
@@ -43,7 +41,7 @@ export default function GlobalError({
                 <Title order={1}>Application error</Title>
                 <Text c="dimmed">
                   An unexpected error occurred. Try refreshing the page or
-                  contact if the problem persists.
+                  contact us if the problem persists.
                 </Text>
                 <Button leftSection={<IconRefresh size={16} />} onClick={reset}>
                   Reload view
