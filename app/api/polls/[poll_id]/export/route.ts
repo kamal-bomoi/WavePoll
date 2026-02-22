@@ -1,15 +1,28 @@
+import { Ratelimit } from "@upstash/ratelimit";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
+import { redis } from "@/lib/redis";
 import { Supabase } from "@/lib/supabase/client";
 import { is_poll_ended } from "@/utils/poll";
 import { WavePollError } from "@/utils/wave-poll-error";
 
+const limiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(2, "1 h"),
+  prefix: "@wavepoll/ratelimit:csv_export"
+});
+
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   ctx: { params: Promise<{ poll_id: string }> }
 ) {
   try {
     const { poll_id } = await ctx.params;
+
+    const requester_ip = get_requester_ip(req);
+
+    if (requester_ip) await ratelimit(poll_id, requester_ip);
+
     const supabase = Supabase();
 
     const { data: poll, error: poll_error } = await supabase
@@ -98,7 +111,8 @@ export async function GET(
   } catch (e) {
     const error = e as Error;
 
-    if (env.NODE_ENV === "development") console.log(error);
+    if (env.NODE_ENV === "development" && !(error instanceof WavePollError))
+      console.log(error);
 
     if (error instanceof WavePollError)
       return NextResponse.json(
@@ -120,6 +134,39 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+async function ratelimit(poll_id: string, ip: string): Promise<void> {
+  const identifier = `${poll_id}:${ip}`;
+  const limit = await limiter.limit(identifier);
+
+  if (!limit.success) {
+    const retry_after_seconds = Math.max(
+      1,
+      Math.ceil((limit.reset - Date.now()) / 1000)
+    );
+
+    throw new WavePollError(
+      429,
+      `Too many CSV export requests. Try again in ${retry_after_seconds} seconds.`
+    );
+  }
+}
+
+function get_requester_ip(req: NextRequest): string | null {
+  const cf_connecting_ip = req.headers.get("cf-connecting-ip");
+  if (cf_connecting_ip) return cf_connecting_ip;
+
+  const x_real_ip = req.headers.get("x-real-ip");
+  if (x_real_ip) return x_real_ip;
+
+  const x_forwarded_for = req.headers.get("x-forwarded-for");
+  if (x_forwarded_for) {
+    const [first] = x_forwarded_for.split(",");
+    return first?.trim() || null;
+  }
+
+  return null;
 }
 
 function escape_csv(value: string): string {

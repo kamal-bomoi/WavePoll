@@ -19,7 +19,7 @@ type TypedRouteHandler<TBody, TParams, TQuery> = (
     supabase: ReturnType<typeof Supabase>;
   },
   req: NextRequest
-) => Promise<any> | any;
+) => any;
 
 export interface RouteOptions<
   TBody = unknown,

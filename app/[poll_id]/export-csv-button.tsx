@@ -16,6 +16,8 @@ export function ExportCSVButton({
   function export_csv() {
     if (is_exporting) return;
 
+    if (!window.confirm("Export the full poll results as CSV?")) return;
+
     set_is_exporting(true);
 
     download_csv(poll.id, () => set_is_exporting(false));
