@@ -53,7 +53,7 @@ export default function ResultPage() {
               />
               <Group justify="space-between" style={{ width: "100%" }}>
                 <Text size="sm" c="dimmed">
-                  Last updated {dayjs(query.data.updated_at).fromNow()}
+                  {`Last updated ${dayjs(query.data.last_voted_at ?? query.data.created_at).fromNow()}`}
                 </Text>
                 <NewPollButton />
               </Group>

@@ -1,9 +1,7 @@
-import "server-only";
 import { sql } from "drizzle-orm";
 import {
   check,
   doublePrecision,
-  foreignKey,
   index,
   integer,
   jsonb,
@@ -80,7 +78,7 @@ export const votes = pgTable(
       .notNull()
       .references(() => polls.id, { onDelete: "cascade" }),
     voter_key: text().notNull(),
-    option_id: text(),
+    option_id: text().references(() => options.id, { onDelete: "set null" }),
     rating: smallint(),
     comment: text(),
     created_at: timestamp({
@@ -92,11 +90,6 @@ export const votes = pgTable(
   (t) => [
     unique("votes_poll_id_voter_key_unique").on(t.poll_id, t.voter_key),
     check("votes_rating_check", sql`${t.rating} >= 1 AND ${t.rating} <= 5`),
-    foreignKey({
-      name: "votes_poll_id_option_id_fkey",
-      columns: [t.poll_id, t.option_id],
-      foreignColumns: [options.poll_id, options.id]
-    }).onDelete("set null"),
     index("idx_votes_poll_id").on(t.poll_id),
     index("idx_votes_option_id")
       .on(t.option_id)
@@ -172,6 +165,7 @@ export const polls_details = pgView("polls_details", {
   updated_at: timestamp({
     withTimezone: true
   }).notNull(),
+  last_voted_at: timestamp({ withTimezone: true }),
   total_votes: integer().notNull(),
   text_responses_count: integer().notNull(),
   rating_average: doublePrecision(),
@@ -206,6 +200,7 @@ export const polls_details = pgView("polls_details", {
     p.reaction_emojis,
     p.created_at,
     p.updated_at,
+    v.last_voted_at,
     COALESCE(v.total_votes, 0)::int AS total_votes,
     COALESCE(v.text_responses_count, 0)::int AS text_responses_count,
     v.rating_average,
@@ -217,7 +212,8 @@ export const polls_details = pgView("polls_details", {
       poll_id,
       count(*)::int AS total_votes,
       count(comment)::int AS text_responses_count,
-      avg(rating)::double precision AS rating_average
+      avg(rating)::double precision AS rating_average,
+      max(created_at) AS last_voted_at
     FROM votes
     GROUP BY poll_id
   ) v ON v.poll_id = p.id

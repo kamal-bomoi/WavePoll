@@ -102,7 +102,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
         return inserted;
       });
     } catch (e) {
-      if (is_unique_violation(e as any))
+      if (is_unique_violation(e))
         throw WavePollError.Conflict("You have already voted on this poll.");
 
       throw e;
@@ -177,8 +177,14 @@ async function get_voter_key(): Promise<string> {
   return value;
 }
 
-function is_unique_violation(error: { code?: string }) {
-  return error.code === "23505";
+function is_unique_violation(error: unknown) {
+  return (
+    error instanceof Error &&
+    error.cause &&
+    typeof error.cause === "object" &&
+    "code" in error.cause &&
+    error.cause.code === "23505"
+  );
 }
 
 function to_signed_voter_key(voter_key: string): string {

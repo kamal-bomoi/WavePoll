@@ -37,10 +37,13 @@ export function PollResultContent({
     (acc, cur) => acc + cur.votes,
     0
   );
-  const participation = Math.min(
-    100,
-    Math.round((poll.total_votes / Math.max(poll.presence, 1)) * 100)
-  );
+  const participation =
+    poll.presence > 0
+      ? Math.min(
+          100,
+          Math.round((poll.total_votes / Math.max(poll.presence, 1)) * 100)
+        )
+      : null;
 
   return (
     <Stack gap="md">
@@ -98,9 +101,13 @@ export function PollResultContent({
         </Stack>
       )}
 
-      <SimpleGrid cols={{ base: 1, sm: 3 }}>
+      <SimpleGrid cols={{ base: 1, sm: poll.reaction_emojis?.length ? 3 : 2 }}>
         <StatCard label="Total votes" value={poll.total_votes} />
-        <StatCard label="Participation" value={`${participation}%`} />
+        <StatCard
+          label="Participation"
+          value={participation ? `${participation}%` : "-"}
+        />
+
         {!!poll.reaction_emojis?.length && (
           <StatCard label="Reactions" value={calculate_reactions_count(poll)} />
         )}

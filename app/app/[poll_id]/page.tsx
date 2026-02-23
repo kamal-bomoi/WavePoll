@@ -69,7 +69,7 @@ export default function VotePollPage() {
 
               <Group justify="space-between" pt={8}>
                 <Text size="sm" c="dimmed">
-                  Created {dayjs(query.data.created_at).fromNow()}
+                  {`Last updated ${dayjs(query.data.last_voted_at ?? query.data.created_at).fromNow()}`}
                 </Text>
                 <NewPollButton />
               </Group>
