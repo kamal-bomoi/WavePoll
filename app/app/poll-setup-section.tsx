@@ -19,7 +19,7 @@ import {
   IconTrash
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import type { StudioForm } from "@/app/page";
+import type { StudioForm } from "@/app/app/page";
 import type { PollStatus, PollType } from "@/lib/db/schema";
 
 const poll_type_options: { label: string; value: PollType }[] = [

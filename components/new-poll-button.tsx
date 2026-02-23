@@ -12,7 +12,7 @@ export function NewPollButton() {
       leftSection={<IconPlus size={16} />}
       color="indigo"
       variant="light"
-      onClick={() => router.push("/")}
+      onClick={() => router.push("/app")}
     >
       New Poll
     </Button>

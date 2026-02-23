@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
-import { PollResultContent } from "@/app/[poll_id]/result/poll-result-content";
+import { PollResultContent } from "@/app/app/[poll_id]/result/poll-result-content";
 import { NewPollButton } from "@/components/new-poll-button";
 import { WaveAlert } from "@/components/wave-alert";
 import { WavePollHeader } from "@/components/wavepoll-header";

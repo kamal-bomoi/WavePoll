@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { IconChartBar, IconUser } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import { SharePollButton } from "@/app/[poll_id]/share-poll-button";
+import { SharePollButton } from "@/app/app/share-poll-button";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll } from "@/types";
 import { calculate_reactions_count } from "@/utils/poll-generic";
@@ -132,7 +132,7 @@ export function PollResultContent({
         <Group wrap="wrap">
           <Button
             leftSection={<IconChartBar size={16} />}
-            onClick={() => router.push(`/${poll.id}`)}
+            onClick={() => router.push(`/app/${poll.id}`)}
             variant="outline"
           >
             Go to vote

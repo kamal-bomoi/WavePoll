@@ -17,10 +17,10 @@ import { queries } from "@/lib/api/queries";
 import type { Poll, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { calculate_reactions_count } from "@/utils/poll-generic";
+import { SharePollButton } from "../share-poll-button";
 import { ExportCSVButton } from "./export-csv-button";
 import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
-import { SharePollButton } from "./share-poll-button";
 
 export function VoteForm({
   poll,
@@ -190,7 +190,7 @@ export function VoteForm({
             <Button
               variant="outline"
               color="indigo"
-              onClick={() => router.push(`/${poll.id}/result`)}
+              onClick={() => router.push(`/app/${poll.id}/result`)}
             >
               View results
             </Button>

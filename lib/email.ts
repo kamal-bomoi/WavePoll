@@ -11,7 +11,7 @@ export async function send_poll_ended_summary_email(poll: Poll): Promise<void> {
 
   if (!poll.owner_email) throw new Error("Poll does not have an owner email.");
 
-  const result_url = `${env.APP_BASE_URL}/${poll.id}/result`;
+  const result_url = `${env.APP_BASE_URL}/app/${poll.id}/result`;
   const subject = `Your WavePoll has ended: ${poll.title}`;
   const top_options = poll.options
     .slice()
