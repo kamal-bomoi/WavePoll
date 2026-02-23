@@ -1,23 +1,11 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  Group,
-  Paper,
-  Stack,
-  Text
-} from "@mantine/core";
+import { Badge, Box, Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import type { Poll } from "@/types";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { SharePollButton } from "./[poll_id]/share-poll-button";
-import { DeletePollButton } from "./delete-poll-button";
-import { PublishPollButton } from "./publish-poll-button";
-import { UnpublishPollButton } from "./unpublish-poll-button";
 
-export function UserPollCard({ poll }: { poll: Poll }) {
+export function HistoryPollCard({ poll }: { poll: Poll }) {
   const has_ended = is_poll_ended(poll);
 
   return (
@@ -45,32 +33,18 @@ export function UserPollCard({ poll }: { poll: Poll }) {
           </Group>
         </Box>
 
-        <Flex gap={8} align="center" wrap="wrap">
-          <Group gap={8} wrap="wrap">
-            {poll.status === "draft" && !has_ended && (
-              <PublishPollButton poll={poll} />
-            )}
-
-            {poll.status === "live" && !has_ended && (
-              <UnpublishPollButton poll={poll} />
-            )}
-
-            <DeletePollButton poll={poll} />
-          </Group>
-
-          <Group gap={8} wrap="wrap">
-            <SharePollButton url={`/${poll.id}`} size="compact-sm" />
-            <Button
-              component={Link}
-              size="compact-sm"
-              variant="subtle"
-              leftSection={<IconEye size={14} />}
-              href={`/${poll.id}/result` as any}
-            >
-              Open
-            </Button>
-          </Group>
-        </Flex>
+        <Group gap={8} wrap="wrap">
+          <SharePollButton url={`/${poll.id}`} size="compact-sm" />
+          <Button
+            component={Link}
+            size="compact-sm"
+            variant="subtle"
+            leftSection={<IconEye size={14} />}
+            href={`/${poll.id}` as any}
+          >
+            Open
+          </Button>
+        </Group>
       </Stack>
     </Paper>
   );

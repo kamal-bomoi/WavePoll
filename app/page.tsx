@@ -5,6 +5,7 @@ import { type UseFormReturnType, useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { HistoryPollsSection } from "@/app/history-polls-section";
 import { LiveBehaviorSection } from "@/app/live-behavior-section";
 import { PollSetupSection } from "@/app/poll-setup-section";
 import { StudioHeader } from "@/app/studio-header";
@@ -68,9 +69,9 @@ export default function StudioPage() {
         title: values.title,
         type: values.type,
         status: values.status,
-        description: values.description,
+        description: values.description || null,
         end_at: to_iso(values.end_at),
-        owner_email: values.owner_email,
+        owner_email: values.owner_email || null,
         reaction_emojis,
         options: values.type === "single" ? values.options : null
       },
@@ -123,6 +124,7 @@ export default function StudioPage() {
                 <Stack gap="md">
                   <LiveBehaviorSection form={form} />
                   <UserPollsSection />
+                  <HistoryPollsSection />
                 </Stack>
               </Paper>
             </SimpleGrid>

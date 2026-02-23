@@ -80,14 +80,10 @@ export function route<
           try {
             body = (await req.json()) as TBody;
           } catch {
-            return NextResponse.json<{ errors: ErrorProps[] }>(
-              { errors: [{ message: "Invalid JSON in request body" }] },
-              { status: 422 }
-            );
+            body = {} as TBody;
           }
-        } else {
-          body = {} as TBody;
-        }
+        } else body = {} as TBody;
+
         params = (ctx.params ? await ctx.params : {}) as TParams;
         query = Object.fromEntries(
           req.nextUrl.searchParams.entries()
@@ -180,10 +176,7 @@ async function validate<
     try {
       raw_body = await req.json();
     } catch {
-      return {
-        ok: false,
-        errors: [{ message: "Invalid JSON in request body", source: "body" }]
-      };
+      raw_body = {};
     }
   }
 
