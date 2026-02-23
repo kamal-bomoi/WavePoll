@@ -82,7 +82,7 @@ export function VoteForm({
     <Stack gap="md" mt={8}>
       {!has_ended && <PollTimeRemaining time={poll.end_at} on_complete={end} />}
 
-      {!is_live && (
+      {!is_live && !has_ended && (
         <WaveAlert
           type="warning"
           title=""

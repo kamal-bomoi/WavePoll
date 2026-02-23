@@ -11,7 +11,7 @@ export function EmbedSnippet({ poll_id }: { poll_id: string }) {
 
   useEffect(() => {
     set_snippet(
-      `<iframe src="${window.location.origin}/embed/${poll_id}" title="WavePoll" width="500" height="400" style="border:0;border-radius:16px;overflow:hidden;"></iframe>`
+      `<iframe src="${window.location.origin}/embed/${poll_id}" title="WavePoll" width="400" height="300" style="border:0;border-radius:16px;overflow:hidden;"></iframe>`
     );
   }, [poll_id]);
 

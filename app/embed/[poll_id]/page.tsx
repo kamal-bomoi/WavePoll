@@ -18,11 +18,33 @@ import { PollOption } from "@/app/app/[poll_id]/result/poll-option";
 import { VoteForm } from "@/app/app/[poll_id]/vote-form";
 import { WaveAlert } from "@/components/wave-alert";
 import { useQuery } from "@/hooks/use-query";
+import { useUpdateQuery } from "@/hooks/use-update-query";
+import { queries } from "@/lib/api/queries";
+import { useRealtime } from "@/lib/realtime-client";
+import type { Poll } from "@/types";
 
 export default function EmbedPollPage() {
   const params = useParams<{ poll_id: string }>();
+  const update_query = useUpdateQuery();
   const query = useQuery("poll", [params.poll_id], {
     enabled: !!params.poll_id
+  });
+
+  useRealtime({
+    channels: [`poll:${params.poll_id}`],
+    events: ["poll.updated", "poll.ended"],
+    enabled: !!query.data?.id,
+    onData({ event, data }) {
+      if (!query.data?.id) return;
+
+      if (event === "poll.updated" || event === "poll.ended") {
+        if (data.id !== query.data.id) return;
+
+        update_query<Poll>(queries.poll.key(query.data.id), (draft) => {
+          Object.assign(draft, data);
+        });
+      }
+    }
   });
 
   if (query.isLoading)
@@ -53,8 +75,7 @@ export default function EmbedPollPage() {
             {poll.description}
           </Text>
         )}
-        <VoteForm poll={poll} mode="embed" />
-        <Divider />
+
         <Stack gap={8}>
           <Group justify="space-between">
             <Badge variant="light" color="indigo">
@@ -94,6 +115,9 @@ export default function EmbedPollPage() {
             </Text>
           )}
         </Stack>
+
+        <Divider />
+        <VoteForm poll={poll} mode="embed" />
       </Stack>
     </Paper>
   );
