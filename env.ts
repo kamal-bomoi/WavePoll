@@ -3,8 +3,10 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    SUPABASE_URL: z.url(),
-    SUPABASE_PUBLISHABLE_DEFAULT_KEY: z.string(),
+    DATABASE_URL: z
+      .string()
+      .startsWith("postgres://")
+      .or(z.string().startsWith("postgresql://")),
     COOKIE_SECRET: z.string().min(32),
     UPSTASH_REDIS_REST_URL: z.url(),
     UPSTASH_REDIS_REST_TOKEN: z.string(),
@@ -22,9 +24,7 @@ export const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: z.url().optional()
   },
   runtimeEnv: {
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_DEFAULT_KEY:
-      process.env.SUPABASE_PUBLISHABLE_DEFAULT_KEY,
+    DATABASE_URL: process.env.DATABASE_URL,
     COOKIE_SECRET: process.env.COOKIE_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,

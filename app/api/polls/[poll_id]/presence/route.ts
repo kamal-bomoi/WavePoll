@@ -1,4 +1,7 @@
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { db } from "@/lib/db/client";
+import { polls } from "@/lib/db/schema";
 import { emit_poll_presence } from "@/lib/realtime";
 import { redis } from "@/lib/redis";
 import {
@@ -12,14 +15,11 @@ export const POST = route<
   { action: "join" | "heartbeat" | "leave"; viewer_id: string },
   { poll_id: string }
 >(
-  async ({ body, params, supabase }) => {
-    const { data: poll, error: poll_error } = await supabase
-      .from("polls")
-      .select("id")
-      .eq("id", params.poll_id)
-      .maybeSingle();
-
-    if (poll_error) throw poll_error;
+  async ({ body, params }) => {
+    const poll = await db.query.polls.findFirst({
+      columns: { id: true },
+      where: eq(polls.id, params.poll_id)
+    });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 

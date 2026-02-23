@@ -20,7 +20,7 @@ import {
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import type { StudioForm } from "@/app/page";
-import type { PollType } from "@/types";
+import type { PollStatus, PollType } from "@/lib/db/schema";
 
 const poll_type_options: { label: string; value: PollType }[] = [
   { label: "Single", value: "single" },
@@ -30,7 +30,7 @@ const poll_type_options: { label: string; value: PollType }[] = [
 
 export const poll_status_options: {
   label: string;
-  value: "draft" | "live";
+  value: PollStatus;
 }[] = [
   { label: "Draft", value: "draft" },
   { label: "Live", value: "live" }
@@ -82,8 +82,8 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
               <IconPlus size={16} />
             </ActionIcon>
           </Group>
-          {form.values.options?.map((value, index) => (
-            <Group key={`option-${value}-${index}`} wrap="nowrap" align="end">
+          {form.values.options?.map((_, index) => (
+            <Group key={`option-${index}`} wrap="nowrap" align="end">
               <TextInput
                 style={{ flex: 1 }}
                 placeholder={`Option ${index + 1}`}

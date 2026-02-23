@@ -31,7 +31,7 @@ export default function StudioPage() {
       status: "live",
       options: ["", ""],
       end_at: dayjs().add(2, "hour").toDate().toISOString(),
-      reaction_emojis: undefined
+      reaction_emojis: null
     },
     validate: {
       title: (value) => {
@@ -61,18 +61,18 @@ export default function StudioPage() {
     const reaction_emojis =
       Array.isArray(values.reaction_emojis) && values.reaction_emojis.length > 0
         ? values.reaction_emojis
-        : undefined;
+        : null;
 
     mutation.mutate(
       {
         title: values.title,
         type: values.type,
         status: values.status,
-        description: values.description || undefined,
+        description: values.description,
         end_at: to_iso(values.end_at),
-        owner_email: values.owner_email || undefined,
+        owner_email: values.owner_email,
         reaction_emojis,
-        options: values.type === "single" ? values.options : undefined
+        options: values.type === "single" ? values.options : null
       },
       {
         onSuccess(poll) {

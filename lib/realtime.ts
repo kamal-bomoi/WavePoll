@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { type InferRealtimeEvents, Realtime } from "@upstash/realtime";
 import { z } from "zod";
 import { env } from "@/env";
-import type { Poll, PollResponse } from "@/types";
+import type { Poll, Vote } from "@/types";
 import { redis } from "./redis";
 
 export type RealtimeEvents = InferRealtimeEvents<typeof realtime>;
@@ -15,7 +15,7 @@ const schema = {
     new_comment: z.looseObject({
       id: z.string(),
       comment: z.string()
-    }) as unknown as z.ZodType<PollResponse>,
+    }) as unknown as z.ZodType<Vote>,
     presence: z.object({
       poll_id: z.string(),
       presence: z.number().int().nonnegative()
@@ -45,12 +45,10 @@ export async function emit_poll_updated(poll: Poll): Promise<void> {
 
 export async function emit_poll_new_comment(
   poll_id: string,
-  response: PollResponse
+  vote: Vote
 ): Promise<void> {
   try {
-    await realtime
-      .channel(`poll:${poll_id}`)
-      .emit("poll.new_comment", response);
+    await realtime.channel(`poll:${poll_id}`).emit("poll.new_comment", vote);
   } catch (error) {
     if (env.NODE_ENV === "development") console.error(error);
 

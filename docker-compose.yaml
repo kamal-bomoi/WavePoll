@@ -1,0 +1,33 @@
+services:
+  postgres:
+    # DATABASE_URL=postgresql://wavepoll:wavepoll@localhost:15432/wavepoll
+    image: postgres
+    ports:
+      - "15432:5432"
+    environment:
+      POSTGRES_DB: wavepoll
+      POSTGRES_USER: wavepoll
+      POSTGRES_PASSWORD: wavepoll
+    volumes:
+      - wavepoll_postgres:/var/lib/postgresql
+  redis:
+    image: redis
+    command: redis-server --maxmemory-policy noeviction
+    ports:
+      - "6379:6379"
+    volumes:
+      - wavepoll_redis:/data
+  serverless-redis-http:
+    # UPSTASH_REDIS_REST_URL=http://localhost:8079
+    # UPSTASH_REDIS_REST_TOKEN=wavepoll
+    ports:
+      - "8079:80"
+    image: hiett/serverless-redis-http:latest
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: wavepoll
+      SRH_CONNECTION_STRING: "redis://redis:6379"
+
+volumes:
+  wavepoll_postgres:
+  wavepoll_redis:

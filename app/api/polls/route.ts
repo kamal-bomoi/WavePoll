@@ -1,52 +1,55 @@
 import dayjs from "dayjs";
 import z from "zod";
+import { env } from "@/env";
+import { db } from "@/lib/db/client";
+import { options, poll_status, poll_type, polls } from "@/lib/db/schema";
 import { schedule_poll_end } from "@/lib/qstash";
 import { emit_poll_updated } from "@/lib/realtime";
-import type { CreatePollPayload, PollRow } from "@/types";
+import type { CreatePollPayload } from "@/types";
 import { nanoid } from "@/utils/nanoid";
-import { get_poll, get_polls } from "@/utils/poll";
+import { get_poll, get_polls } from "@/utils/poll-server";
 import { route } from "@/utils/route";
+import { WavePollError } from "@/utils/wave-poll-error";
 
 export const POST = route<CreatePollPayload>(
-  async ({ body, supabase }) => {
-    const { data: poll, error: create_error } = await supabase
-      .from("polls")
-      .insert({
-        id: nanoid.id(),
-        title: body.title.trim(),
-        type: body.type,
-        status: body.status,
-        description: body.description ?? null,
-        owner_email: body.owner_email ?? null,
-        end_at: body.end_at,
-        reaction_emojis: body.reaction_emojis ?? null
-      })
-      .select("*")
-      .single<PollRow>();
-
-    if (create_error) throw create_error;
-
-    if (body.type === "single") {
-      const { error: options_error } = await supabase.from("options").insert(
-        body.options!.map((value) => ({
+  async ({ body }) => {
+    const poll = await db.transaction(async (tx) => {
+      const [poll] = await tx
+        .insert(polls)
+        .values({
           id: nanoid.id(),
-          poll_id: poll.id,
-          value
-        }))
-      );
+          title: body.title.trim(),
+          type: body.type,
+          status: body.status,
+          description: body.description,
+          owner_email: body.owner_email,
+          end_at: new Date(body.end_at),
+          reaction_emojis: body.reaction_emojis
+        })
+        .returning({ id: polls.id });
 
-      if (options_error) {
-        await supabase.from("polls").delete().eq("id", poll.id);
+      if (!poll)
+        throw WavePollError.InternalServerError("Failed to insert poll.");
 
-        throw options_error;
-      }
-    }
+      if (body.type === "single" && body.options?.length)
+        await tx.insert(options).values(
+          body.options.map((value) => ({
+            id: nanoid.id(),
+            poll_id: poll.id,
+            value
+          }))
+        );
 
-    const next_poll = await get_poll(supabase, poll.id);
+      return poll;
+    });
+
+    const next_poll = await get_poll(poll.id);
 
     await Promise.all([
       emit_poll_updated(next_poll),
-      schedule_poll_end(next_poll)
+      env.NODE_ENV === "production"
+        ? schedule_poll_end(next_poll)
+        : Promise.resolve()
     ]);
 
     return next_poll;
@@ -56,14 +59,14 @@ export const POST = route<CreatePollPayload>(
     schema: {
       body: z
         .object({
-          type: z.enum(["single", "rating", "text"]),
-          title: z.string().trim().min(1),
-          status: z.enum(["draft", "live"]),
-          description: z.string().trim().optional(),
-          owner_email: z.email().optional(),
-          options: z.array(z.string().trim()).optional(),
-          end_at: z.iso.datetime(),
-          reaction_emojis: z.array(z.string()).min(1).optional()
+          owner_email: z.email().nullable(),
+          title: z.string(),
+          description: z.string().nullable(),
+          type: z.enum(poll_type.enumValues),
+          status: z.enum(poll_status.enumValues),
+          reaction_emojis: z.array(z.string()).min(1).nullable(),
+          options: z.array(z.string()).nullable(),
+          end_at: z.iso.datetime()
         })
         .superRefine((body, ctx) => {
           const end_at = dayjs(body.end_at);
@@ -91,12 +94,12 @@ export const POST = route<CreatePollPayload>(
 );
 
 export const GET = route<undefined, Record<string, string>, { ids: string }>(
-  async ({ query, supabase }) => {
+  async ({ query }) => {
     const ids = query.ids.split(",");
 
     if (!ids.length) return [];
 
-    return get_polls(supabase, ids);
+    return get_polls(ids);
   },
   {
     schema: {

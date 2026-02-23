@@ -1,14 +1,17 @@
 import * as Sentry from "@sentry/nextjs";
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { waitUntil } from "@vercel/functions";
+import { eq } from "drizzle-orm";
 import { env } from "@/env";
+import { db } from "@/lib/db/client";
+import { polls } from "@/lib/db/schema";
 import { send_poll_ended_summary_email } from "@/lib/email";
 import { is_qstash_signature_configured } from "@/lib/qstash";
 import { emit_poll_ended } from "@/lib/realtime";
 import { redis } from "@/lib/redis";
-import { Supabase } from "@/lib/supabase/client";
 import type { Poll } from "@/types";
-import { get_poll, is_poll_ended } from "@/utils/poll";
+import { is_poll_ended } from "@/utils/poll-generic";
+import { get_poll } from "@/utils/poll-server";
 
 const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24 * 30;
 
@@ -17,20 +20,12 @@ async function handler(
   context: { params: Promise<{ poll_id: string }> }
 ) {
   const { poll_id } = await context.params;
-  const supabase = Supabase();
 
   try {
-    const { data: poll, error } = await supabase
-      .from("polls")
-      .select("id,end_at")
-      .eq("id", poll_id)
-      .maybeSingle();
-
-    if (error)
-      return Response.json(
-        { errors: [{ message: "An internal server error occurred." }] },
-        { status: 500 }
-      );
+    const poll = await db.query.polls.findFirst({
+      where: eq(polls.id, poll_id),
+      columns: { id: true, end_at: true }
+    });
 
     if (!poll) return Response.json({ ok: true });
 
@@ -49,7 +44,7 @@ async function handler(
     try {
       await redis.expire(lock_key, IDEMPOTENCY_TTL_SECONDS);
 
-      next_poll = await get_poll(supabase, poll.id);
+      next_poll = await get_poll(poll.id);
 
       await emit_poll_ended(next_poll);
     } catch (inner_error) {

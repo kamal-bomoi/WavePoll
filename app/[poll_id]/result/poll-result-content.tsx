@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { SharePollButton } from "@/app/[poll_id]/share-poll-button";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import type { Poll } from "@/types";
+import { calculate_reactions_count } from "@/utils/poll-generic";
 import { ExportCSVButton } from "../export-csv-button";
 import { PollEndedAlert } from "../poll-ended-alert";
 import { PollTimeRemaining } from "../poll-time-remaining";
@@ -101,7 +102,7 @@ export function PollResultContent({
         <StatCard label="Total votes" value={poll.total_votes} />
         <StatCard label="Participation" value={`${participation}%`} />
         {!!poll.reaction_emojis?.length && (
-          <StatCard label="Reactions" value={poll.reactions_count} />
+          <StatCard label="Reactions" value={calculate_reactions_count(poll)} />
         )}
       </SimpleGrid>
 

@@ -1,10 +1,12 @@
 import * as Sentry from "@sentry/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
+import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
+import { db } from "@/lib/db/client";
+import { options, polls, reactions, votes } from "@/lib/db/schema";
 import { redis } from "@/lib/redis";
-import { Supabase } from "@/lib/supabase/client";
-import { is_poll_ended } from "@/utils/poll";
+import { is_poll_ended } from "@/utils/poll-generic";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 const limiter = new Ratelimit({
@@ -27,15 +29,10 @@ export async function GET(
 
     await ratelimit(poll_id, requester_ip);
 
-    const supabase = Supabase();
-
-    const { data: poll, error: poll_error } = await supabase
-      .from("polls")
-      .select("id,title,type,end_at")
-      .eq("id", poll_id)
-      .maybeSingle();
-
-    if (poll_error) throw poll_error;
+    const poll = await db.query.polls.findFirst({
+      columns: { id: true, title: true, type: true, end_at: true },
+      where: eq(polls.id, poll_id)
+    });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 
@@ -44,32 +41,34 @@ export async function GET(
         "CSV export is only available after poll ends."
       );
 
-    const [
-      { data: votes, error: votes_error },
-      { data: options, error: options_error },
-      { data: reactions, error: reactions_error }
-    ] = await Promise.all([
-      supabase
-        .from("votes")
-        .select("id,created_at,voter_key,option_id,rating,comment")
-        .eq("poll_id", poll.id)
-        .order("created_at", { ascending: false }),
-      supabase.from("options").select("id,value").eq("poll_id", poll.id),
-      supabase
-        .from("reactions")
-        .select("voter_key,emoji")
-        .eq("poll_id", poll.id)
+    const [vote_rows, option_rows, reaction_rows] = await Promise.all([
+      db
+        .select({
+          id: votes.id,
+          created_at: votes.created_at,
+          voter_key: votes.voter_key,
+          option_id: votes.option_id,
+          rating: votes.rating,
+          comment: votes.comment
+        })
+        .from(votes)
+        .where(eq(votes.poll_id, poll.id))
+        .orderBy(desc(votes.created_at)),
+      db
+        .select({ id: options.id, value: options.value })
+        .from(options)
+        .where(eq(options.poll_id, poll.id)),
+      db
+        .select({ voter_key: reactions.voter_key, emoji: reactions.emoji })
+        .from(reactions)
+        .where(eq(reactions.poll_id, poll.id))
     ]);
 
-    if (votes_error) throw votes_error;
-    if (options_error) throw options_error;
-    if (reactions_error) throw reactions_error;
-
     const option_by_id = new Map(
-      (options ?? []).map((option) => [option.id, option.value])
+      option_rows.map((option) => [option.id, option.value])
     );
     const reaction_by_voter_key = new Map(
-      (reactions ?? []).map((reaction) => [reaction.voter_key, reaction.emoji])
+      reaction_rows.map((reaction) => [reaction.voter_key, reaction.emoji])
     );
 
     const headers = [
@@ -86,12 +85,12 @@ export async function GET(
       "reaction"
     ];
 
-    const rows = (votes ?? []).map((vote) => [
+    const rows = vote_rows.map((vote) => [
       poll.id,
       poll.title,
       poll.type,
       vote.id,
-      vote.created_at,
+      vote.created_at.toISOString(),
       vote.voter_key,
       vote.option_id ?? "",
       vote.option_id ? (option_by_id.get(vote.option_id) ?? "") : "",

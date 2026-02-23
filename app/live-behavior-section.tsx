@@ -28,7 +28,7 @@ export function LiveBehaviorSection({ form }: { form: StudioForm }) {
   const selected_emojis = emojis ?? [];
 
   function toggle_reactions(enabled: boolean) {
-    form.setFieldValue("reaction_emojis", enabled ? ["\u{1F44D}"] : undefined);
+    form.setFieldValue("reaction_emojis", enabled ? ["\u{1F44D}"] : null);
   }
 
   function add_emoji(emoji: string) {
@@ -41,7 +41,7 @@ export function LiveBehaviorSection({ form }: { form: StudioForm }) {
   function remove_emoji(emoji: string) {
     const next = selected_emojis.filter((value) => value !== emoji);
 
-    form.setFieldValue("reaction_emojis", next.length > 0 ? next : undefined);
+    form.setFieldValue("reaction_emojis", next.length > 0 ? next : null);
   }
 
   return (

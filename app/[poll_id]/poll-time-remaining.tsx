@@ -6,7 +6,7 @@ export function PollTimeRemaining({
   time,
   on_complete
 }: {
-  time: string;
+  time: Date;
   on_complete: () => void;
 }) {
   return (

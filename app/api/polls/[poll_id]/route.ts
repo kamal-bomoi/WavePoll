@@ -1,13 +1,17 @@
+import { eq } from "drizzle-orm";
 import z from "zod";
+import { db } from "@/lib/db/client";
+import type { PollStatus } from "@/lib/db/schema";
+import { polls } from "@/lib/db/schema";
 import { emit_poll_updated } from "@/lib/realtime";
-import type { PollStatus } from "@/types";
-import { get_poll, is_poll_ended } from "@/utils/poll";
+import { is_poll_ended } from "@/utils/poll-generic";
+import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 export const GET = route<undefined, { poll_id: string }>(
-  async ({ params, supabase }) => {
-    return get_poll(supabase, params.poll_id);
+  async ({ params }) => {
+    return get_poll(params.poll_id);
   },
   {
     schema: {
@@ -19,18 +23,15 @@ export const GET = route<undefined, { poll_id: string }>(
 );
 
 export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
-  async ({ params, body, supabase }) => {
-    const { data: poll, error: poll_error } = await supabase
-      .from("polls")
-      .select("id,status,end_at")
-      .eq("id", params.poll_id)
-      .maybeSingle();
-
-    if (poll_error) throw poll_error;
+  async ({ params, body }) => {
+    const poll = await db.query.polls.findFirst({
+      columns: { id: true, status: true, end_at: true },
+      where: eq(polls.id, params.poll_id)
+    });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 
-    if (poll.status === body.status) return get_poll(supabase, poll.id);
+    if (poll.status === body.status) return get_poll(poll.id);
 
     const has_ended = is_poll_ended(poll);
 
@@ -42,16 +43,12 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
     if (body.status === "draft" && has_ended)
       throw WavePollError.BadRequest("Cannot unpublish a poll that has ended.");
 
-    const { error: update_error } = await supabase
-      .from("polls")
-      .update({
-        status: body.status
-      })
-      .eq("id", poll.id);
+    await db
+      .update(polls)
+      .set({ status: body.status })
+      .where(eq(polls.id, poll.id));
 
-    if (update_error) throw update_error;
-
-    const next_poll = await get_poll(supabase, poll.id);
+    const next_poll = await get_poll(poll.id);
 
     await emit_poll_updated(next_poll);
 
@@ -70,15 +67,13 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
 );
 
 export const DELETE = route<undefined, { poll_id: string }>(
-  async ({ params, supabase }) => {
-    const { error, count } = await supabase
-      .from("polls")
-      .delete({ count: "exact" })
-      .eq("id", params.poll_id);
+  async ({ params }) => {
+    const result = await db
+      .delete(polls)
+      .where(eq(polls.id, params.poll_id))
+      .returning({ id: polls.id });
 
-    if (error) throw error;
-
-    if (!count) throw WavePollError.NotFound("Poll does not exist.");
+    if (!result.length) throw WavePollError.NotFound("Poll does not exist.");
 
     return null;
   },

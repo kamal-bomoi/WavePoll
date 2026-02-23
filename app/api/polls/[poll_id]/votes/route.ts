@@ -1,24 +1,32 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import z from "zod";
 import { env } from "@/env";
+import { db } from "@/lib/db/client";
+import { polls, reactions, votes } from "@/lib/db/schema";
 import { emit_poll_new_comment, emit_poll_updated } from "@/lib/realtime";
-import type { PollResponse, VotePayload } from "@/types";
+import type { Vote, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
-import { get_poll, is_poll_ended } from "@/utils/poll";
+import { is_poll_ended } from "@/utils/poll-generic";
+import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 export const POST = route<VotePayload, { poll_id: string }>(
-  async ({ body, params, supabase }) => {
-    const { data: poll, error: poll_error } = await supabase
-      .from("polls")
-      .select("id,type,status,end_at,reaction_emojis,options(id)")
-      .eq("id", params.poll_id)
-      .maybeSingle();
-
-    if (poll_error) throw poll_error;
+  async ({ body, params }) => {
+    const poll = await db.query.polls.findFirst({
+      columns: {
+        id: true,
+        type: true,
+        status: true,
+        end_at: true,
+        reaction_emojis: true
+      },
+      with: { options: { columns: { id: true } } },
+      where: eq(polls.id, params.poll_id)
+    });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 
@@ -58,47 +66,49 @@ export const POST = route<VotePayload, { poll_id: string }>(
 
     const voter_key = await get_voter_key();
 
-    const { data: vote, error: vote_error } = await supabase
-      .from("votes")
-      .insert({
-        id: nanoid.id(),
-        poll_id: poll.id,
-        voter_key,
-        option_id: "option_id" in body ? body.option_id : null,
-        rating: "rating" in body ? body.rating : null,
-        comment: "comment" in body ? body.comment : null
-      })
-      .select("id,option_id,rating,comment,created_at")
-      .single<PollResponse>();
+    let vote: Vote;
 
-    if (vote_error) {
-      if (is_unique_violation(vote_error))
+    try {
+      vote = await db.transaction(async (tx) => {
+        const [inserted] = await tx
+          .insert(votes)
+          .values({
+            id: nanoid.id(),
+            poll_id: poll.id,
+            voter_key,
+            option_id: "option_id" in body ? body.option_id : null,
+            rating: "rating" in body ? body.rating : null,
+            comment: "comment" in body ? body.comment : null
+          })
+          .returning({
+            id: votes.id,
+            option_id: votes.option_id,
+            rating: votes.rating,
+            comment: votes.comment,
+            created_at: votes.created_at
+          });
+
+        if (!inserted)
+          throw WavePollError.InternalServerError("Failed to insert vote.");
+
+        if (body.reaction)
+          await tx.insert(reactions).values({
+            id: nanoid.id(),
+            poll_id: poll.id,
+            voter_key,
+            emoji: body.reaction
+          });
+
+        return inserted;
+      });
+    } catch (e) {
+      if (is_unique_violation(e as any))
         throw WavePollError.Conflict("You have already voted on this poll.");
 
-      throw vote_error;
+      throw e;
     }
 
-    if (body.reaction) {
-      const { error: reaction_error } = await supabase
-        .from("reactions")
-        .insert({
-          id: nanoid.id(),
-          poll_id: poll.id,
-          voter_key,
-          emoji: body.reaction
-        });
-
-      if (reaction_error) {
-        if (is_unique_violation(reaction_error))
-          throw WavePollError.Conflict(
-            "You have already reacted on this poll."
-          );
-
-        throw reaction_error;
-      }
-    }
-
-    const next_poll = await get_poll(supabase, poll.id);
+    const next_poll = await get_poll(poll.id);
 
     await Promise.all([
       emit_poll_updated(next_poll),

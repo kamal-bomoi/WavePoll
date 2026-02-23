@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Poll } from "@/types";
-import { is_poll_ended } from "@/utils/poll";
+import { is_poll_ended } from "@/utils/poll-generic";
 
 export function usePollEndState(
   poll: Poll

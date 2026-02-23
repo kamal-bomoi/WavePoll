@@ -1,10 +1,11 @@
 import * as Sentry from "@sentry/nextjs";
+import { DrizzleError, DrizzleQueryError } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import type { RequireAtLeastOne } from "type-fest";
 import { ZodError, type ZodType } from "zod";
 import { env } from "@/env";
-import { Supabase } from "@/lib/supabase/client";
 import type { ErrorProps } from "@/types";
+import { drizzle_error_handler } from "./drizzle-error";
 import { WavePollError } from "./wave-poll-error";
 
 export interface RouteContext {
@@ -16,7 +17,6 @@ type TypedRouteHandler<TBody, TParams, TQuery> = (
     body: TBody;
     params: TParams;
     query: TQuery;
-    supabase: ReturnType<typeof Supabase>;
   },
   req: NextRequest
 ) => any;
@@ -93,7 +93,7 @@ export function route<
           req.nextUrl.searchParams.entries()
         ) as TQuery;
       }
-      const context = { body, params, query, supabase: Supabase() };
+      const context = { body, params, query };
 
       const response = await handler(context, req);
 
@@ -127,6 +127,15 @@ export function route<
 
         Sentry.captureException(error);
       });
+
+      if (error instanceof DrizzleError || error instanceof DrizzleQueryError) {
+        const { status, errors } = drizzle_error_handler(error);
+
+        return NextResponse.json<{ errors: ErrorProps[] }>(
+          { errors },
+          { status }
+        );
+      }
 
       return NextResponse.json<{ errors: ErrorProps[] }>(
         {

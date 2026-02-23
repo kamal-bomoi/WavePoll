@@ -16,6 +16,7 @@ import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
 import type { Poll, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
+import { calculate_reactions_count } from "@/utils/poll-generic";
 import { ExportCSVButton } from "./export-csv-button";
 import { PollEndedAlert } from "./poll-ended-alert";
 import { PollTimeRemaining } from "./poll-time-remaining";
@@ -154,7 +155,7 @@ export function VoteForm({
             </Button>
           ))}{" "}
           <Text size="sm" c="dimmed">
-            {poll.reactions_count} reactions
+            {calculate_reactions_count(poll)} reactions
             {reaction && !has_voted && <> (+1 pending)</>}
           </Text>
         </Group>

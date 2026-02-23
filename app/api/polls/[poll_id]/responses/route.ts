@@ -1,4 +1,7 @@
+import { and, desc, eq, lt, or } from "drizzle-orm";
 import z from "zod";
+import { db } from "@/lib/db/client";
+import { votes } from "@/lib/db/schema";
 import type { PollResponsesPage } from "@/types";
 import { PAGINATION_LIMIT } from "@/utils/constants";
 import { route } from "@/utils/route";
@@ -8,23 +11,30 @@ export const GET = route<
   { poll_id: string },
   { cursor_created_at?: string; cursor_id?: string }
 >(
-  async ({ params, query, supabase }) => {
-    let request = supabase
-      .from("votes")
-      .select("id,option_id,rating,comment,created_at")
-      .eq("poll_id", params.poll_id)
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
+  async ({ params, query }) => {
+    const cursor_condition =
+      query.cursor_created_at && query.cursor_id
+        ? or(
+            lt(votes.created_at, new Date(query.cursor_created_at)),
+            and(
+              eq(votes.created_at, new Date(query.cursor_created_at)),
+              lt(votes.id, query.cursor_id)
+            )
+          )
+        : undefined;
+
+    const data = await db
+      .select({
+        id: votes.id,
+        option_id: votes.option_id,
+        rating: votes.rating,
+        comment: votes.comment,
+        created_at: votes.created_at
+      })
+      .from(votes)
+      .where(and(eq(votes.poll_id, params.poll_id), cursor_condition))
+      .orderBy(desc(votes.created_at), desc(votes.id))
       .limit(PAGINATION_LIMIT + 1);
-
-    if (query.cursor_created_at && query.cursor_id)
-      request = request.or(
-        `created_at.lt.${query.cursor_created_at},and(created_at.eq.${query.cursor_created_at},id.lt.${query.cursor_id})`
-      );
-
-    const { data, error } = await request;
-
-    if (error) throw error;
 
     const has_more = data.length > PAGINATION_LIMIT;
     const items = has_more ? data.slice(0, PAGINATION_LIMIT) : data;
@@ -35,7 +45,9 @@ export const GET = route<
       limit: PAGINATION_LIMIT,
       has_more,
       next_cursor:
-        has_more && last ? { created_at: last.created_at, id: last.id } : null
+        has_more && last
+          ? { created_at: last.created_at.toISOString(), id: last.id }
+          : null
     } satisfies PollResponsesPage;
   },
   {
