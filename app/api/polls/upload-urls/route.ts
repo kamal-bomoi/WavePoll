@@ -45,8 +45,14 @@ export const POST = route<UploadUrlsPayload>(
         files: z
           .array(
             z.object({
-              content_type: z.enum(ALLOWED_CONTENT_TYPES),
-              content_length: z.number().int().min(1).max(MAX_FILE_SIZE)
+              content_type: z.enum(ALLOWED_CONTENT_TYPES, {
+                error: `Invalid image type. Allowed types: ${ALLOWED_CONTENT_TYPES.map(
+                  (t) => t.replace("image/", "").toUpperCase()
+                ).join(", ")}.`
+              }),
+              content_length: z.number().int().min(1).max(MAX_FILE_SIZE, {
+                error: "Image size must not exceed 5MB."
+              })
             })
           )
           .min(MIN_OPTIONS)

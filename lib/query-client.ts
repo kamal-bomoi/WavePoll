@@ -1,8 +1,11 @@
 import {
   defaultShouldDehydrateQuery,
   isServer,
+  MutationCache,
   QueryClient
 } from "@tanstack/react-query";
+import axios from "axios";
+import { toast } from "sonner";
 
 let browser_query_client: QueryClient | undefined;
 
@@ -33,6 +36,12 @@ function create_client() {
         shouldDehydrateQuery: (query) =>
           defaultShouldDehydrateQuery(query) || query.state.status === "pending"
       }
-    }
+    },
+    mutationCache: new MutationCache({
+      onError(error) {
+        if (error instanceof Error && !axios.isAxiosError(error))
+          toast.error(error.message);
+      }
+    })
   });
 }

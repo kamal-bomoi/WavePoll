@@ -74,7 +74,9 @@ export function route<
         params = result.values.params;
         query = result.values.query;
       } else {
-        const has_body = ["POST", "PUT", "PATCH"].includes(req.method);
+        const has_body = ["POST", "PUT", "PATCH", "DELETE"].includes(
+          req.method
+        );
 
         if (has_body) {
           try {
@@ -169,7 +171,7 @@ async function validate<
   ctx: RouteContext,
   options?: RouteOptions<TBody, TParams, TQuery>
 ): Promise<ValidationResult<TBody, TParams, TQuery>> {
-  const has_body = ["POST", "PUT", "PATCH"].includes(req.method);
+  const has_body = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
 
   let raw_body: unknown = {};
   if (has_body) {
