@@ -1,8 +1,12 @@
+import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
+import * as Sentry from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
 import z from "zod";
+import { env } from "@/env";
 import { db } from "@/lib/db/client";
 import type { PollStatus } from "@/lib/db/schema";
 import { polls } from "@/lib/db/schema";
+import { r2 } from "@/lib/r2";
 import { emit_poll_updated } from "@/lib/realtime";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { get_poll } from "@/utils/poll-server";
@@ -68,12 +72,39 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
 
 export const DELETE = route<undefined, { poll_id: string }>(
   async ({ params }) => {
-    const result = await db
-      .delete(polls)
-      .where(eq(polls.id, params.poll_id))
-      .returning({ id: polls.id });
+    const poll = await db.query.polls.findFirst({
+      columns: {
+        id: true,
+        type: true
+      },
+      with: {
+        options: {
+          columns: {
+            value: true
+          }
+        }
+      },
+      where: eq(polls.id, params.poll_id)
+    });
 
-    if (!result.length) throw WavePollError.NotFound("Poll does not exist.");
+    if (!poll) throw WavePollError.NotFound("Poll does not exist.");
+
+    await db.delete(polls).where(eq(polls.id, poll.id));
+
+    if (poll.type === "image")
+      await r2
+        .send(
+          new DeleteObjectsCommand({
+            Bucket: env.R2_BUCKET,
+            Delete: {
+              Objects: poll.options.map((option) => ({ Key: option.value })),
+              Quiet: true
+            }
+          })
+        )
+        .catch((error) => {
+          Sentry.captureException(error);
+        });
 
     return null;
   },

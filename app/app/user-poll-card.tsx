@@ -59,7 +59,7 @@ export function UserPollCard({ poll }: { poll: Poll }) {
           </Group>
 
           <Group gap={8} wrap="wrap">
-            <SharePollButton url={`/${poll.id}`} size="compact-sm" />
+            <SharePollButton url={`/app/${poll.id}`} size="compact-sm" />
             <Button
               component={Link}
               size="compact-sm"
