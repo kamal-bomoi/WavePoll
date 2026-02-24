@@ -16,6 +16,7 @@ import { IconUsers } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { NewPollButton } from "@/components/new-poll-button";
+import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";
 import { WavePollHeader } from "@/components/wavepoll-header";
 import { usePollQuery } from "@/hooks/use-poll-query";
@@ -49,9 +50,12 @@ export default function VotePollPage() {
             <Stack gap="sm">
               <WavePollHeader title="Voting room" />
               <Group justify="space-between">
-                <Badge color="indigo" variant="light">
-                  {query.data.status}
-                </Badge>
+                <Group gap={8}>
+                  <Badge color="indigo" variant="light">
+                    {query.data.status}
+                  </Badge>
+                  <RealtimeIndicator />
+                </Group>
                 <Group gap={6}>
                   <ThemeIcon size="sm" variant="light" color="indigo">
                     <IconUsers size={14} />
