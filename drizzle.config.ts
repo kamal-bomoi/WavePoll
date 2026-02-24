@@ -5,7 +5,7 @@ import { defineConfig } from "drizzle-kit";
 if (process.env.NODE_ENV === "production")
   dotenv.config({ path: ".env.production" });
 else if (process.env.NODE_ENV === "development")
-  dotenv.config({ path: ".env.local" });
+  dotenv.config({ path: ".env.development.local" });
 else
   throw new Error(
     `Invalid NODE_ENV: ${process.env.NODE_ENV}. Expected 'production' or 'development', got ${process.env.NODE_ENV}.`

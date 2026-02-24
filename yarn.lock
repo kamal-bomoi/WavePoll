@@ -2072,7 +2072,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:16.1.6":
+"@next/env@npm:16.1.6, @next/env@npm:^16.1.6":
   version: 16.1.6
   resolution: "@next/env@npm:16.1.6"
   checksum: 10c0/ed7023edb94b9b2e5da3f9c99d08b614da9757c1edd0ecec792fce4d336b4f0c64db1a84955e07cfbd848b9e61c4118fff28f4098cd7b0a7f97814a90565ebe6
@@ -7043,6 +7043,7 @@ __metadata:
     "@mantine/dates": "npm:^8.3.15"
     "@mantine/form": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
+    "@next/env": "npm:^16.1.6"
     "@sentry/nextjs": "npm:^10.0.0"
     "@t3-oss/env-nextjs": "npm:^0.13.10"
     "@tabler/icons-react": "npm:^3.36.1"

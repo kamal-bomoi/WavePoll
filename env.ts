@@ -17,16 +17,16 @@ export const env = createEnv({
     QSTASH_NEXT_SIGNING_KEY: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.email().optional(),
-    R2_ENDPOINT: z.string(),
-    R2_BUCKET: z.string(),
-    R2_ACCESS_KEY_ID: z.string(),
-    R2_SECRET_ACCESS_KEY: z.string(),
     SENTRY_ORG: z.string().optional(),
-    SENTRY_PROJECT: z.string().optional()
+    SENTRY_PROJECT: z.string().optional(),
+    S3_ENDPOINT: z.string(),
+    S3_BUCKET: z.string(),
+    S3_ACCESS_KEY_ID: z.string(),
+    S3_SECRET_ACCESS_KEY: z.string()
   },
   client: {
     NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
-    NEXT_PUBLIC_R2_URL: z.url()
+    NEXT_PUBLIC_S3_URL: z.url()
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -41,14 +41,14 @@ export const env = createEnv({
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
-    R2_ENDPOINT: process.env.R2_ENDPOINT,
-    R2_BUCKET: process.env.R2_BUCKET,
-    R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
-    R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    NEXT_PUBLIC_R2_URL: process.env.NEXT_PUBLIC_R2_URL,
     SENTRY_ORG: process.env.SENTRY_ORG,
-    SENTRY_PROJECT: process.env.SENTRY_PROJECT
+    SENTRY_PROJECT: process.env.SENTRY_PROJECT,
+    S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_BUCKET: process.env.S3_BUCKET,
+    S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
+    NEXT_PUBLIC_S3_URL: process.env.NEXT_PUBLIC_S3_URL
   },
   shared: {
     NODE_ENV: z.enum(["development", "production"]).default("development")

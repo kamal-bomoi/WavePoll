@@ -114,7 +114,7 @@ export function VoteForm({
       {poll.type === "image" && (
         <Group wrap="nowrap" align="stretch" style={{ overflowX: "auto" }}>
           {poll.options.map((option) => {
-            const image_url = `${env.NEXT_PUBLIC_R2_URL}/${option.value}`;
+            const image_url = `${env.NEXT_PUBLIC_S3_URL}/${option.value}`;
             const selected = option_id === option.id;
 
             return (

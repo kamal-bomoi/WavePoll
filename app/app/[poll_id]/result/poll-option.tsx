@@ -25,7 +25,7 @@ export function PollOption({
       {is_image && (
         <Zoom>
           <Image
-            src={`${env.NEXT_PUBLIC_R2_URL}/${option.value}`}
+            src={`${env.NEXT_PUBLIC_S3_URL}/${option.value}`}
             alt="Poll option"
             radius="md"
             h={180}

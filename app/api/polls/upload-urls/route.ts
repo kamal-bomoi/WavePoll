@@ -2,7 +2,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import z from "zod";
 import { env } from "@/env";
-import { r2 } from "@/lib/r2";
+import { s3 } from "@/lib/s3";
 import type { UploadUrlsPayload } from "@/types";
 import {
   ALLOWED_CONTENT_TYPES,
@@ -20,14 +20,14 @@ export const POST = route<UploadUrlsPayload>(
       const key = `options/${nanoid({ length: 6 })}`;
 
       const command = new PutObjectCommand({
-        Bucket: env.R2_BUCKET,
+        Bucket: env.S3_BUCKET,
         Key: key,
         ContentType: file.content_type,
         ContentLength: file.content_length,
         CacheControl: "public, max-age=31536000, immutable"
       });
 
-      const url = await getSignedUrl(r2, command, {
+      const url = await getSignedUrl(s3, command, {
         expiresIn: SIGNED_URL_EXPIRY_SECONDS
       });
 

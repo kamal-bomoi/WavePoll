@@ -6,8 +6,8 @@ import { env } from "@/env";
 import { db } from "@/lib/db/client";
 import type { PollStatus } from "@/lib/db/schema";
 import { polls } from "@/lib/db/schema";
-import { r2 } from "@/lib/r2";
 import { emit_poll_updated } from "@/lib/realtime";
+import { s3 } from "@/lib/s3";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
@@ -92,10 +92,10 @@ export const DELETE = route<undefined, { poll_id: string }>(
     await db.delete(polls).where(eq(polls.id, poll.id));
 
     if (poll.type === "image")
-      await r2
+      await s3
         .send(
           new DeleteObjectsCommand({
-            Bucket: env.R2_BUCKET,
+            Bucket: env.S3_BUCKET,
             Delete: {
               Objects: poll.options.map((option) => ({ Key: option.value })),
               Quiet: true
@@ -103,6 +103,8 @@ export const DELETE = route<undefined, { poll_id: string }>(
           })
         )
         .catch((error) => {
+          if (env.NODE_ENV === "development") console.error(error);
+
           Sentry.captureException(error);
         });
 

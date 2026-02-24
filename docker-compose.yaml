@@ -1,6 +1,5 @@
 services:
   postgres:
-    # DATABASE_URL=postgresql://wavepoll:wavepoll@localhost:15432/wavepoll
     image: postgres
     ports:
       - "15432:5432"
@@ -18,8 +17,6 @@ services:
     volumes:
       - wavepoll_redis:/data
   serverless-redis-http:
-    # UPSTASH_REDIS_REST_URL=http://localhost:8079
-    # UPSTASH_REDIS_REST_TOKEN=wavepoll
     ports:
       - "8079:80"
     image: hiett/serverless-redis-http:latest
@@ -27,7 +24,20 @@ services:
       SRH_MODE: env
       SRH_TOKEN: wavepoll
       SRH_CONNECTION_STRING: "redis://redis:6379"
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=wavepoll
+      - MINIO_ROOT_PASSWORD=wavepoll
+    volumes:
+      - wavepoll_minio:/data
+    command: ["server", "/data", "--console-address", ":9001"]
 
 volumes:
   wavepoll_postgres:
   wavepoll_redis:
+  wavepoll_minio:
