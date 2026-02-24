@@ -148,6 +148,9 @@ export default function StudioPage() {
                   on_type_change={on_type_change}
                   image_files={image_files}
                   on_add_image_option={() => {
+                    if ((form.values.options?.length ?? 0) >= MAX_OPTIONS)
+                      return;
+
                     form.insertListItem("options", "");
                     set_image_files((previous) => [...previous, null]);
                   }}

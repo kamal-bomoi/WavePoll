@@ -22,6 +22,7 @@ import {
 import dayjs from "dayjs";
 import type { StudioForm } from "@/app/app/page";
 import type { PollStatus, PollType } from "@/lib/db/schema";
+import { MAX_OPTIONS } from "@/utils/constants";
 
 const poll_type_options: { label: string; value: PollType }[] = [
   { label: "Single", value: "single" },
@@ -53,6 +54,8 @@ export function PollSetupSection({
   on_add_image_option: () => void;
   on_remove_image_option: (index: number) => void;
 }) {
+  const can_add_option = (form.values.options?.length ?? 0) < MAX_OPTIONS;
+
   return (
     <Stack gap="md">
       <Title order={3}>Poll setup</Title>
@@ -94,10 +97,15 @@ export function PollSetupSection({
             <ActionIcon
               variant="light"
               color="indigo"
+              disabled={!can_add_option}
               onClick={
                 form.values.type === "image"
                   ? on_add_image_option
-                  : () => form.insertListItem("options", "")
+                  : () => {
+                      if (!can_add_option) return;
+
+                      form.insertListItem("options", "");
+                    }
               }
             >
               <IconPlus size={16} />
