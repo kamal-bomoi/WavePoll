@@ -93,6 +93,7 @@ export default function EmbedPollPage() {
                   key={option.id}
                   option={option}
                   total={poll.total_votes}
+                  is_image={poll.type === "image"}
                 />
               ))}
             </Stack>

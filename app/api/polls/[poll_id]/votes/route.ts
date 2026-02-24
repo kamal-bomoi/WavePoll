@@ -36,7 +36,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
     if (is_poll_ended(poll))
       throw WavePollError.BadRequest("This poll has already ended.");
 
-    if (poll.type === "single") {
+    if (poll.type === "single" || poll.type === "image") {
       if (!("option_id" in body))
         throw WavePollError.UnprocessableEntity("Option is required.");
 

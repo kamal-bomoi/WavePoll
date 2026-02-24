@@ -75,3 +75,15 @@ export type Prettify<T> = {
 export type Fn = (...args: any[]) => any;
 
 export type Nullish<T> = T | null | undefined;
+
+export interface UploadUrlsPayload {
+  files: {
+    content_type: string;
+    content_length: number;
+  }[];
+}
+
+export interface UploadUrl {
+  key: string;
+  url: string;
+}

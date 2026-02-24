@@ -38,20 +38,20 @@ class Api {
   }
 
   #interceptors(): void {
-    this.#client.interceptors.response.use(undefined, (original: ApiError) => {
-      if (isServer) return Promise.reject(original);
+    this.#client.interceptors.response.use(undefined, (error: ApiError) => {
+      if (isServer) return Promise.reject(error);
 
       const should_toast =
-        typeof original.config?.meta?.toast === "function"
-          ? original.config.meta.toast(original)
-          : (original.config?.meta?.toast ?? true);
+        typeof error.config?.meta?.toast === "function"
+          ? error.config.meta.toast(error)
+          : (error.config?.meta?.toast ?? true);
 
       if (should_toast)
-        parse_api_error(original).errors.forEach((error) => {
-          toast.error(error.message);
-        });
+        parse_api_error(error).errors.forEach(
+          (e) => void toast.error(e.message)
+        );
 
-      return Promise.reject(original);
+      return Promise.reject(error);
     });
   }
 }

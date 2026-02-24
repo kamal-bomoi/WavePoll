@@ -1,5 +1,6 @@
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
+import "react-medium-image-zoom/dist/styles.css";
 import "../styles.css";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import { Analytics } from "@vercel/analytics/next";

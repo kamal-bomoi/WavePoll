@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Card,
+  FileInput,
   Group,
   SegmentedControl,
   Select,
@@ -24,6 +25,7 @@ import type { PollStatus, PollType } from "@/lib/db/schema";
 
 const poll_type_options: { label: string; value: PollType }[] = [
   { label: "Single", value: "single" },
+  { label: "Image", value: "image" },
   { label: "Rating", value: "rating" },
   { label: "Text", value: "text" }
 ];
@@ -36,7 +38,21 @@ export const poll_status_options: {
   { label: "Live", value: "live" }
 ];
 
-export function PollSetupSection({ form }: { form: StudioForm }) {
+export function PollSetupSection({
+  form,
+  on_type_change,
+  image_files,
+  on_change_image_file,
+  on_add_image_option,
+  on_remove_image_option
+}: {
+  form: StudioForm;
+  on_type_change: (next_type: PollType) => void;
+  image_files: (File | null)[];
+  on_change_image_file: (index: number, file: File | null) => void;
+  on_add_image_option: () => void;
+  on_remove_image_option: (index: number) => void;
+}) {
   return (
     <Stack gap="md">
       <Title order={3}>Poll setup</Title>
@@ -60,7 +76,8 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
       <SegmentedControl
         fullWidth
         data={poll_type_options}
-        {...form.getInputProps("type")}
+        value={form.values.type}
+        onChange={(value) => on_type_change(value as PollType)}
       />
       <Select
         label="Status"
@@ -68,32 +85,50 @@ export function PollSetupSection({ form }: { form: StudioForm }) {
         {...form.getInputProps("status")}
       />
 
-      {form.values.type === "single" && (
+      {(form.values.type === "single" || form.values.type === "image") && (
         <Stack gap={10}>
           <Group justify="space-between">
             <Text fw={600} size="sm">
-              Options
+              {form.values.type === "image" ? "Image options" : "Options"}
             </Text>
             <ActionIcon
               variant="light"
               color="indigo"
-              onClick={() => form.insertListItem("options", "")}
+              onClick={
+                form.values.type === "image"
+                  ? on_add_image_option
+                  : () => form.insertListItem("options", "")
+              }
             >
               <IconPlus size={16} />
             </ActionIcon>
           </Group>
           {form.values.options?.map((_, index) => (
             <Group key={`option-${index}`} wrap="nowrap" align="end">
-              <TextInput
-                style={{ flex: 1 }}
-                placeholder={`Option ${index + 1}`}
-                {...form.getInputProps(`options.${index}`)}
-              />
+              {form.values.type === "image" ? (
+                <FileInput
+                  style={{ flex: 1 }}
+                  accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                  placeholder={`Upload image ${index + 1}`}
+                  value={image_files[index] ?? null}
+                  onChange={(file) => on_change_image_file(index, file)}
+                />
+              ) : (
+                <TextInput
+                  style={{ flex: 1 }}
+                  placeholder={`Option ${index + 1}`}
+                  {...form.getInputProps(`options.${index}`)}
+                />
+              )}
               <ActionIcon
                 variant="subtle"
                 color="red"
                 disabled={form.values.options!.length < 3}
-                onClick={() => form.removeListItem("options", index)}
+                onClick={
+                  form.values.type === "image"
+                    ? () => on_remove_image_option(index)
+                    : () => form.removeListItem("options", index)
+                }
               >
                 <IconTrash size={16} />
               </ActionIcon>

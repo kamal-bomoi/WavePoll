@@ -4,6 +4,7 @@ import { Container, Paper, SimpleGrid, Stack } from "@mantine/core";
 import { type UseFormReturnType, useForm } from "@mantine/form";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 import { HistoryPollsSection } from "@/app/app/history-polls-section";
 import { LiveBehaviorSection } from "@/app/app/live-behavior-section";
@@ -14,7 +15,9 @@ import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { useMutation } from "@/hooks/use-mutation";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
+import type { PollType } from "@/lib/db/schema";
 import type { CreatePollPayload, Poll } from "@/types";
+import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 
 export type StudioForm = UseFormReturnType<CreatePollPayload>;
 
@@ -23,6 +26,10 @@ export default function StudioPage() {
   const [, set_poll_ids] = useLocalPollIds();
   const mutation = useMutation("create poll");
   const update_query = useUpdateQuery();
+  const [image_files, set_image_files] = useState<(File | null)[]>([
+    null,
+    null
+  ]);
   const form = useForm<CreatePollPayload>({
     initialValues: {
       owner_email: "",
@@ -45,18 +52,34 @@ export default function StudioPage() {
         return null;
       },
       options: (value, values) => {
-        if (values.type !== "single") return null;
+        if (values.type !== "single" && values.type !== "image") return null;
 
         const count = (value ?? []).filter(
           (option) => option.trim().length > 0
         ).length;
 
-        return count >= 2
-          ? null
-          : "Add at least 2 options for single-choice polls.";
+        return count >= 2 ? null : `Add at least ${MIN_OPTIONS} options.`;
       }
     }
   });
+
+  function on_type_change(next_type: PollType) {
+    form.setFieldValue("type", next_type);
+
+    if (next_type !== "image") return;
+
+    if ((form.values.options?.length ?? 0) < MIN_OPTIONS)
+      form.setFieldValue(
+        "options",
+        Array.from({ length: MIN_OPTIONS }, () => "")
+      );
+
+    set_image_files((previous) => {
+      const next = [...previous];
+      while (next.length < MIN_OPTIONS) next.push(null);
+      return next.slice(0, MAX_OPTIONS);
+    });
+  }
 
   const on_submit = form.onSubmit(async (values) => {
     const reaction_emojis =
@@ -73,7 +96,8 @@ export default function StudioPage() {
         end_at: to_iso(values.end_at),
         owner_email: values.owner_email || null,
         reaction_emojis,
-        options: values.type === "single" ? values.options : null
+        options: values.type === "single" ? values.options : null,
+        image_files
       },
       {
         onSuccess(poll) {
@@ -98,6 +122,8 @@ export default function StudioPage() {
               : "Draft saved successfully."
           );
 
+          set_image_files([null, null]);
+
           if (poll.status === "live") router.push(`/app/${poll.id}`);
         }
       }
@@ -117,7 +143,34 @@ export default function StudioPage() {
 
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
               <Paper>
-                <PollSetupSection form={form} />
+                <PollSetupSection
+                  form={form}
+                  on_type_change={on_type_change}
+                  image_files={image_files}
+                  on_add_image_option={() => {
+                    form.insertListItem("options", "");
+                    set_image_files((previous) => [...previous, null]);
+                  }}
+                  on_remove_image_option={(index) => {
+                    form.removeListItem("options", index);
+                    set_image_files((previous) =>
+                      previous.filter((_, i) => i !== index)
+                    );
+                  }}
+                  on_change_image_file={(index, file) => {
+                    form.setFieldValue(
+                      `options.${index}`,
+                      file ? `__pending_image_${index}` : ""
+                    );
+
+                    set_image_files((previous) => {
+                      const next = [...previous];
+                      next[index] = file;
+
+                      return next;
+                    });
+                  }}
+                />
               </Paper>
 
               <Paper>

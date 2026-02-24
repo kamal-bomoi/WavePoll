@@ -1,6 +1,8 @@
 import {
   Button,
+  Card,
   Group,
+  Image,
   Radio,
   Rating,
   Stack,
@@ -9,7 +11,9 @@ import {
 } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Zoom from "react-medium-image-zoom";
 import { WaveAlert } from "@/components/wave-alert";
+import { env } from "@/env";
 import { useMutation } from "@/hooks/use-mutation";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import { useUpdateQuery } from "@/hooks/use-update-query";
@@ -46,7 +50,7 @@ export function VoteForm({
   const can_submit =
     !voting_locked &&
     !has_voted &&
-    ((poll.type === "single" && !!option_id) ||
+    (((poll.type === "single" || poll.type === "image") && !!option_id) ||
       (poll.type === "rating" && rating > 0) ||
       (poll.type === "text" &&
         comment.trim().length > 2 &&
@@ -56,7 +60,7 @@ export function VoteForm({
     if (!can_submit || mutation.isPending) return;
 
     const payload = (
-      poll.type === "single"
+      poll.type === "single" || poll.type === "image"
         ? { option_id, reaction }
         : poll.type === "rating"
           ? { rating, reaction }
@@ -105,6 +109,48 @@ export function VoteForm({
             ))}
           </Stack>
         </Radio.Group>
+      )}
+
+      {poll.type === "image" && (
+        <Group wrap="nowrap" align="stretch" style={{ overflowX: "auto" }}>
+          {poll.options.map((option) => {
+            const image_url = `${env.NEXT_PUBLIC_R2_URL}/${option.value}`;
+            const selected = option_id === option.id;
+
+            return (
+              <Card
+                key={option.id}
+                withBorder
+                radius="md"
+                p="sm"
+                style={{ minWidth: 260, maxWidth: 260 }}
+              >
+                <Stack gap="sm">
+                  <Zoom>
+                    <Image
+                      src={image_url}
+                      alt="Poll option"
+                      radius="md"
+                      h={180}
+                      fit="cover"
+                    />
+                  </Zoom>
+
+                  <Button
+                    size="sm"
+                    variant={selected ? "filled" : "light"}
+                    disabled={voting_locked || has_voted || mutation.isPending}
+                    onClick={() =>
+                      set_option_id(option_id === option.id ? null : option.id)
+                    }
+                  >
+                    {selected ? "Selected" : "Select image"}
+                  </Button>
+                </Stack>
+              </Card>
+            );
+          })}
+        </Group>
       )}
 
       {poll.type === "rating" && (

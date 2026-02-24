@@ -1,4 +1,4 @@
-import type { CreatePollPayload, Poll, VotePayload } from "@/types";
+import type { CreatePollPayload, Poll, UploadUrl, VotePayload } from "@/types";
 import { api } from "./client";
 
 export type Mutation = typeof mutations;
@@ -14,8 +14,48 @@ export type MutationVariables<T extends MutationKey> = Parameters<
 >[0];
 
 export const mutations = {
-  "create poll": (payload: CreatePollPayload): Promise<Poll> =>
-    api.post("/polls", payload),
+  "create poll": async (
+    payload: CreatePollPayload & { image_files?: (File | null)[] }
+  ): Promise<Poll> => {
+    const { image_files, ...poll_payload } = payload;
+
+    if (poll_payload.type !== "image") return api.post("/polls", poll_payload);
+
+    const files = (image_files ?? []).filter((file): file is File => !!file);
+
+    const signed = await api.post<UploadUrl[]>("/polls/upload-urls", {
+      files: files.map((file) => ({
+        content_type: file.type,
+        content_length: file.size
+      }))
+    });
+
+    if (signed.length !== files.length)
+      throw new Error("Failed to prepare image uploads.");
+
+    await Promise.all(
+      signed.map(async ({ url }, index) => {
+        const file = files[index];
+
+        if (!file) throw new Error("Image file is missing.");
+
+        const response = await fetch(url, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type
+          }
+        });
+
+        if (!response.ok) throw new Error("File upload failed.");
+      })
+    );
+
+    return api.post("/polls", {
+      ...poll_payload,
+      options: signed.map((entry) => entry.key)
+    } satisfies CreatePollPayload);
+  },
 
   "publish poll": ({ poll_id }: { poll_id: string }): Promise<Poll> =>
     api.patch(`/polls/${poll_id}`, { status: "live" }),

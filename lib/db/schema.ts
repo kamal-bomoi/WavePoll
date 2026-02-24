@@ -26,7 +26,12 @@ export type PollStatus = (typeof poll_status.enumValues)[number];
 
 export type ReactionCount = PollDetail["reaction_breakdown"][number];
 
-export const poll_type = pgEnum("poll_type", ["single", "rating", "text"]);
+export const poll_type = pgEnum("poll_type", [
+  "single",
+  "rating",
+  "text",
+  "image"
+]);
 export const poll_status = pgEnum("poll_status", ["draft", "live"]);
 
 export const polls = pgTable("polls", {

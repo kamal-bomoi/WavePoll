@@ -3,6 +3,7 @@
 import {
   Badge,
   Button,
+  Card,
   Divider,
   Group,
   SimpleGrid,
@@ -67,12 +68,22 @@ export function PollResultContent({
       <Text c="dimmed">{poll.description}</Text>
       <Divider />
 
-      {!!poll.options.length && (
+      {!!poll.options.length && poll.type !== "image" && (
         <Stack gap={10}>
           {poll.options.map((option) => (
             <PollOption key={option.id} option={option} total={total_votes} />
           ))}
         </Stack>
+      )}
+
+      {!!poll.options.length && poll.type === "image" && (
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+          {poll.options.map((option) => (
+            <Card key={option.id} withBorder radius="md" p="sm">
+              <PollOption option={option} total={total_votes} is_image />
+            </Card>
+          ))}
+        </SimpleGrid>
       )}
 
       {poll.type === "rating" && (

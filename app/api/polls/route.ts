@@ -6,6 +6,7 @@ import { options, poll_status, poll_type, polls } from "@/lib/db/schema";
 import { schedule_poll_end } from "@/lib/qstash";
 import { emit_poll_updated } from "@/lib/realtime";
 import type { CreatePollPayload } from "@/types";
+import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
 import { get_poll, get_polls } from "@/utils/poll-server";
 import { route } from "@/utils/route";
@@ -14,7 +15,7 @@ import { WavePollError } from "@/utils/wave-poll-error";
 export const POST = route<CreatePollPayload>(
   async ({ body }) => {
     const poll = await db.transaction(async (tx) => {
-      const [poll] = await tx
+      const [inserted] = await tx
         .insert(polls)
         .values({
           id: nanoid.id(),
@@ -28,19 +29,22 @@ export const POST = route<CreatePollPayload>(
         })
         .returning({ id: polls.id });
 
-      if (!poll)
+      if (!inserted)
         throw WavePollError.InternalServerError("Failed to insert poll.");
 
-      if (body.type === "single" && body.options?.length)
+      if (
+        (body.type === "single" || body.type === "image") &&
+        body.options?.length
+      )
         await tx.insert(options).values(
           body.options.map((value) => ({
             id: nanoid.id(),
-            poll_id: poll.id,
+            poll_id: inserted.id,
             value
           }))
         );
 
-      return poll;
+      return inserted;
     });
 
     const next_poll = await get_poll(poll.id);
@@ -65,8 +69,12 @@ export const POST = route<CreatePollPayload>(
           type: z.enum(poll_type.enumValues),
           status: z.enum(poll_status.enumValues),
           reaction_emojis: z.array(z.string()).min(1).nullable(),
-          options: z.array(z.string()).nullable(),
-          end_at: z.iso.datetime()
+          end_at: z.iso.datetime(),
+          options: z
+            .array(z.string())
+            .min(MIN_OPTIONS)
+            .max(MAX_OPTIONS)
+            .nullable()
         })
         .superRefine((body, ctx) => {
           const end_at = dayjs(body.end_at);
@@ -80,13 +88,13 @@ export const POST = route<CreatePollPayload>(
             });
 
           if (
-            body.type === "single" &&
-            (!body.options || body.options.length < 2)
+            (body.type === "single" || body.type === "image") &&
+            !body.options
           )
             ctx.addIssue({
               code: "custom",
               path: ["options"],
-              message: "Single choice polls require at least 2 options."
+              message: "Options are required for single choice and image polls."
             });
         })
     }
@@ -96,8 +104,6 @@ export const POST = route<CreatePollPayload>(
 export const GET = route<undefined, Record<string, string>, { ids: string }>(
   async ({ query }) => {
     const ids = query.ids.split(",");
-
-    if (!ids.length) return [];
 
     return get_polls(ids);
   },
