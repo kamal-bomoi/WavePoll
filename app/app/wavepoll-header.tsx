@@ -23,7 +23,9 @@ export function WavePollHeader({
             <IconWaveSine size={20} />
           </ThemeIcon>
           <div>
-            <Text fw={800}>WavePoll</Text>
+            <Text component={Link} href="/" fw={800}>
+              WavePoll
+            </Text>
             {title && (
               <Text size="sm" c="dimmed">
                 {title}

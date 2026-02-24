@@ -89,6 +89,15 @@ body {
   padding: clamp(1rem, 3vw, 2.5rem) 1rem clamp(2rem, 5vw, 4rem);
 }
 
+.wave-landing-page {
+  padding-bottom: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.wave-landing-page .wave-footer {
+  padding-top: 0.25rem;
+  padding-bottom: 0;
+}
+
 .wave-footer {
   padding: 1rem;
   text-align: center;

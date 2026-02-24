@@ -18,7 +18,6 @@ export function PollOption({
   is_image = false
 }: PollOptionProps) {
   const percent = percentage({ total, votes: option.votes });
-  const label = is_image ? "Image option" : option.value;
 
   return (
     <Stack gap={6}>
@@ -33,8 +32,12 @@ export function PollOption({
           />
         </Zoom>
       )}
-      <Group justify="space-between" style={{ width: "100%" }} align="center">
-        <Text fw={600}>{label}</Text>
+      <Group
+        justify={is_image ? "flex-start" : "space-between"}
+        style={{ width: "100%" }}
+        align="center"
+      >
+        {!is_image && <Text fw={600}>{option.value}</Text>}
         <Group align="center" gap={8}>
           <Text c="dimmed" size="sm">{`${percent}%`}</Text>
           <Text fw={700} size="sm">

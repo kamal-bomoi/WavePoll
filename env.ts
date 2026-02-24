@@ -26,7 +26,8 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
-    NEXT_PUBLIC_S3_URL: z.url()
+    NEXT_PUBLIC_S3_URL: z.url(),
+    NEXT_PUBLIC_SAMPLE_POLL_ID: z.string().min(1).optional()
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -48,7 +49,8 @@ export const env = createEnv({
     S3_BUCKET: process.env.S3_BUCKET,
     S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
-    NEXT_PUBLIC_S3_URL: process.env.NEXT_PUBLIC_S3_URL
+    NEXT_PUBLIC_S3_URL: process.env.NEXT_PUBLIC_S3_URL,
+    NEXT_PUBLIC_SAMPLE_POLL_ID: process.env.NEXT_PUBLIC_SAMPLE_POLL_ID
   },
   shared: {
     NODE_ENV: z.enum(["development", "production"]).default("development")

@@ -1,6 +1,6 @@
-import { Button, Group, Stack, Title } from "@mantine/core";
+import { Button, Group, Stack } from "@mantine/core";
 import { IconDeviceFloppy } from "@tabler/icons-react";
-import { WavePollHeader } from "@/components/wavepoll-header";
+import { WavePollHeader } from "@/app/app/wavepoll-header";
 
 export function StudioHeader({
   can_submit,
@@ -14,10 +14,7 @@ export function StudioHeader({
   return (
     <Stack gap="sm">
       <WavePollHeader />
-      <Group justify="space-between" align="end" wrap="wrap" gap="sm">
-        <Title order={1} style={{ maxWidth: 760 }}>
-          Build premium polls
-        </Title>
+      <Group justify="flex-end" align="end" wrap="wrap" gap="sm">
         <Button
           type="submit"
           leftSection={<IconDeviceFloppy size={16} />}

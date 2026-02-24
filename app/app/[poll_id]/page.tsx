@@ -15,11 +15,12 @@ import {
 import { IconUsers } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
+import { WavePollHeader } from "@/app/app/wavepoll-header";
 import { NewPollButton } from "@/components/new-poll-button";
 import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";
-import { WavePollHeader } from "@/components/wavepoll-header";
 import { usePollQuery } from "@/hooks/use-poll-query";
+import { is_poll_ended } from "@/utils/poll-generic";
 import { VoteForm } from "./vote-form";
 
 export default function VotePollPage() {
@@ -42,7 +43,10 @@ export default function VotePollPage() {
       </Container>
     );
 
-  if (query.data)
+  if (query.data) {
+    const show_realtime_indicator =
+      query.data.status === "live" && !is_poll_ended(query.data);
+
     return (
       <div className="wave-page">
         <Container size="md">
@@ -54,7 +58,7 @@ export default function VotePollPage() {
                   <Badge color="indigo" variant="light">
                     {query.data.status}
                   </Badge>
-                  <RealtimeIndicator />
+                  {show_realtime_indicator && <RealtimeIndicator />}
                 </Group>
                 <Group gap={6}>
                   <ThemeIcon size="sm" variant="light" color="indigo">
@@ -82,6 +86,7 @@ export default function VotePollPage() {
         </Container>
       </div>
     );
+  }
 
   return null;
 }

@@ -16,12 +16,14 @@ import { IconWaveSine } from "@tabler/icons-react";
 import { useParams } from "next/navigation";
 import { PollOption } from "@/app/app/[poll_id]/result/poll-option";
 import { VoteForm } from "@/app/app/[poll_id]/vote-form";
+import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";
 import { useQuery } from "@/hooks/use-query";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
 import { useRealtime } from "@/lib/realtime-client";
 import type { Poll } from "@/types";
+import { is_poll_ended } from "@/utils/poll-generic";
 
 export default function EmbedPollPage() {
   const params = useParams<{ poll_id: string }>();
@@ -59,6 +61,8 @@ export default function EmbedPollPage() {
   if (!query.data) return null;
 
   const poll = query.data;
+  const show_realtime_indicator =
+    poll.status === "live" && !is_poll_ended(poll);
 
   return (
     <Paper p="md" radius="md" withBorder>
@@ -78,9 +82,12 @@ export default function EmbedPollPage() {
 
         <Stack gap={8}>
           <Group justify="space-between">
-            <Badge variant="light" color="indigo">
-              Results
-            </Badge>
+            <Group gap={8}>
+              <Badge variant="light" color="indigo">
+                Results
+              </Badge>
+              {show_realtime_indicator && <RealtimeIndicator />}
+            </Group>
             <Text size="sm" c="dimmed">
               {poll.total_votes} votes
             </Text>

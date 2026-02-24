@@ -12,12 +12,13 @@ import {
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { PollResultContent } from "@/app/app/[poll_id]/result/poll-result-content";
+import { WavePollHeader } from "@/app/app/wavepoll-header";
 import { NewPollButton } from "@/components/new-poll-button";
 import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";
-import { WavePollHeader } from "@/components/wavepoll-header";
 import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { usePollQuery } from "@/hooks/use-poll-query";
+import { is_poll_ended } from "@/utils/poll-generic";
 
 export default function ResultPage() {
   const params = useParams<{ poll_id: string }>();
@@ -41,16 +42,21 @@ export default function ResultPage() {
       </Container>
     );
 
-  if (query.data)
+  if (query.data) {
+    const show_realtime_indicator =
+      query.data.status === "live" && !is_poll_ended(query.data);
+
     return (
       <div className="wave-page">
         <Container size="md">
           <Paper className="wave-slide-up">
             <Stack gap="sm">
               <WavePollHeader title="Results" />
-              <Group justify="flex-end">
-                <RealtimeIndicator />
-              </Group>
+              {show_realtime_indicator && (
+                <Group justify="flex-end">
+                  <RealtimeIndicator />
+                </Group>
+              )}
               <PollResultContent
                 poll={query.data}
                 is_owner_view={is_owner_view}
@@ -66,6 +72,7 @@ export default function ResultPage() {
         </Container>
       </div>
     );
+  }
 
   return null;
 }
