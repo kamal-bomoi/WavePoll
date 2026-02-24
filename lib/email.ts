@@ -76,7 +76,14 @@ function build_text_summary({
       : null,
     top_options.length
       ? `- Top options:\n${top_options
-          .map((option) => `  • ${option.value}: ${option.votes} vote(s)`)
+          .map((option) => {
+            const label =
+              poll.type === "image"
+                ? to_public_s3_url(option.value)
+                : option.value;
+
+            return `  - ${label}: ${option.votes} vote(s)`;
+          })
           .join("\n")}`
       : null,
     "",
@@ -107,16 +114,21 @@ function build_rich_html({
     poll.type === "text"
       ? `<div class="stat"><span class="label">Text responses</span><span class="value">${poll.text_responses_count}</span></div>`
       : "";
+  const is_image_poll = poll.type === "image";
   const options_html = top_options.length
     ? `
       <div class="card">
         <h3>Top options</h3>
         <ul>
           ${top_options
-            .map(
-              (option) =>
-                `<li><span>${escape_html(option.value)}</span><b>${option.votes}</b></li>`
-            )
+            .map((option) => {
+              if (!is_image_poll)
+                return `<li><span>${escape_html(option.value)}</span><b>${option.votes}</b></li>`;
+
+              return `<li><span class="image-row"><img src="${escape_html(
+                to_public_s3_url(option.value)
+              )}" alt="Poll option" /><span>${option.votes} vote(s)</span></span></li>`;
+            })
             .join("")}
         </ul>
       </div>
@@ -146,6 +158,8 @@ function build_rich_html({
       .card ul { list-style: none; margin: 0; padding: 0; }
       .card li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #f1f3ff; font-size: 14px; color: #334155; }
       .card li:first-child { border-top: 0; }
+      .image-row { display: inline-flex; align-items: center; gap: 10px; }
+      .image-row img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid #e8eaff; display: block; }
       .cta-wrap { margin-top: 18px; }
       .cta { display: inline-block; text-decoration: none; background: #4f46e5; color: #ffffff !important; padding: 11px 16px; border-radius: 10px; font-weight: 600; }
       .footer { border-top: 1px solid #eef0ff; padding: 14px 24px 18px; font-size: 12px; color: #64748b; }
@@ -184,4 +198,11 @@ function escape_html(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function to_public_s3_url(key: string): string {
+  const base = env.NEXT_PUBLIC_S3_URL.replace(/\/+$/, "");
+  const normalized_key = key.replace(/^\/+/, "");
+
+  return `${base}/${normalized_key}`;
 }
