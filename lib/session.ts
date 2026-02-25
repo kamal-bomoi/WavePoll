@@ -30,7 +30,7 @@ export async function get_or_set_anon_id(): Promise<string> {
 
   if (session.anon_id) return session.anon_id;
 
-  session.anon_id = nanoid();
+  session.anon_id = nanoid({ length: 8 });
 
   await session.save();
 

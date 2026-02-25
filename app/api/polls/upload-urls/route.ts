@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import z from "zod";
 import { env } from "@/env";
 import { s3 } from "@/lib/s3";
+import { get_or_set_anon_id } from "@/lib/session";
 import type { UploadUrlsPayload } from "@/types";
 import {
   ALLOWED_CONTENT_TYPES,
@@ -16,8 +17,10 @@ import { route } from "@/utils/route";
 
 export const POST = route<UploadUrlsPayload>(
   async ({ body }) => {
+    const anon_id = await get_or_set_anon_id();
+
     const promises = body.files.map(async (file) => {
-      const key = `options/${nanoid({ length: 6 })}`;
+      const key = `options/${anon_id}/${nanoid({ length: 8 })}`;
 
       const command = new PutObjectCommand({
         Bucket: env.S3_BUCKET,

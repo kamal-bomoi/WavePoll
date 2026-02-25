@@ -16,6 +16,17 @@ import { WavePollError } from "@/utils/wave-poll-error";
 export const POST = route<CreatePollPayload>(
   async ({ body }) => {
     const anon_id = await get_or_set_anon_id();
+    const prefix = `options/${anon_id}/`;
+
+    if (
+      body.type === "image" &&
+      (body.options ?? []).some(
+        (key) => !key.startsWith(prefix) || key.length <= prefix.length
+      )
+    )
+      throw WavePollError.Unauthorized(
+        "One or more image options are not owned by this session."
+      );
 
     const poll = await db.transaction(async (tx) => {
       const [inserted] = await tx

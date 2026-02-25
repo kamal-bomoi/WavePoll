@@ -181,6 +181,8 @@ function get_client_ip(req: NextRequest): string | null {
 }
 
 function escape_csv(value: string): string {
-  const escaped = value.replaceAll('"', '""');
+  const neutralized = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  const escaped = neutralized.replaceAll('"', '""');
+
   return `"${escaped}"`;
 }
