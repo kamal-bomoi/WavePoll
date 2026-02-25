@@ -12,7 +12,7 @@
     "format": "biome format --write",
     "lint": "biome check --write",
     "db:studio": "cross-env NODE_ENV=development drizzle-kit studio",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "cross-env NODE_ENV=development drizzle-kit generate",
     "db:push": "cross-env NODE_ENV=development drizzle-kit push",
     "db:migrate:dev": "cross-env NODE_ENV=development drizzle-kit migrate",
     "db:migrate:prod": "cross-env NODE_ENV=production drizzle-kit migrate",

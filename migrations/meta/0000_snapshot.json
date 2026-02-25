@@ -1,0 +1,512 @@
+{
+  "id": "c3f15d0b-4621-45c8-b787-f7707b524356",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.options": {
+      "name": "options",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "poll_id": {
+          "name": "poll_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_poll_options_poll_id": {
+          "name": "idx_poll_options_poll_id",
+          "columns": [
+            {
+              "expression": "poll_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "options_poll_id_polls_id_fk": {
+          "name": "options_poll_id_polls_id_fk",
+          "tableFrom": "options",
+          "tableTo": "polls",
+          "columnsFrom": [
+            "poll_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "options_poll_id_id_unique": {
+          "name": "options_poll_id_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "poll_id",
+            "id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.polls": {
+      "name": "polls",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "owner_email": {
+          "name": "owner_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "poll_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "poll_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reaction_emojis": {
+          "name": "reaction_emojis",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.reactions": {
+      "name": "reactions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "poll_id": {
+          "name": "poll_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "voter_key": {
+          "name": "voter_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_reactions_poll_id": {
+          "name": "idx_reactions_poll_id",
+          "columns": [
+            {
+              "expression": "poll_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "reactions_poll_id_polls_id_fk": {
+          "name": "reactions_poll_id_polls_id_fk",
+          "tableFrom": "reactions",
+          "tableTo": "polls",
+          "columnsFrom": [
+            "poll_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "reactions_poll_id_voter_key_unique": {
+          "name": "reactions_poll_id_voter_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "poll_id",
+            "voter_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.votes": {
+      "name": "votes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "poll_id": {
+          "name": "poll_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "voter_key": {
+          "name": "voter_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "option_id": {
+          "name": "option_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "name": "rating",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_votes_poll_id": {
+          "name": "idx_votes_poll_id",
+          "columns": [
+            {
+              "expression": "poll_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_votes_option_id": {
+          "name": "idx_votes_option_id",
+          "columns": [
+            {
+              "expression": "option_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"votes\".\"option_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "votes_poll_id_polls_id_fk": {
+          "name": "votes_poll_id_polls_id_fk",
+          "tableFrom": "votes",
+          "tableTo": "polls",
+          "columnsFrom": [
+            "poll_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "votes_option_id_options_id_fk": {
+          "name": "votes_option_id_options_id_fk",
+          "tableFrom": "votes",
+          "tableTo": "options",
+          "columnsFrom": [
+            "option_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "votes_poll_id_voter_key_unique": {
+          "name": "votes_poll_id_voter_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "poll_id",
+            "voter_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "votes_rating_check": {
+          "name": "votes_rating_check",
+          "value": "\"votes\".\"rating\" >= 1 AND \"votes\".\"rating\" <= 5"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.poll_status": {
+      "name": "poll_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "live"
+      ]
+    },
+    "public.poll_type": {
+      "name": "poll_type",
+      "schema": "public",
+      "values": [
+        "single",
+        "rating",
+        "text",
+        "image"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {
+    "public.polls_details": {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_email": {
+          "name": "owner_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "poll_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "poll_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reaction_emojis": {
+          "name": "reaction_emojis",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_voted_at": {
+          "name": "last_voted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_votes": {
+          "name": "total_votes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "text_responses_count": {
+          "name": "text_responses_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating_average": {
+          "name": "rating_average",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "options": {
+          "name": "options",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reaction_breakdown": {
+          "name": "reaction_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "definition": "\n  SELECT\n    p.id,\n    p.owner_email,\n    p.title,\n    p.description,\n    p.type,\n    p.status,\n    p.end_at,\n    p.reaction_emojis,\n    p.created_at,\n    p.updated_at,\n    v.last_voted_at,\n    COALESCE(v.total_votes, 0)::int AS total_votes,\n    COALESCE(v.text_responses_count, 0)::int AS text_responses_count,\n    v.rating_average,\n    COALESCE(opt.options, '[]'::jsonb) AS options,\n    COALESCE(rb.reaction_breakdown, '[]'::jsonb) AS reaction_breakdown\n  FROM polls p\n  LEFT JOIN (\n    SELECT\n      poll_id,\n      count(*)::int AS total_votes,\n      count(comment)::int AS text_responses_count,\n      avg(rating)::double precision AS rating_average,\n      max(created_at) AS last_voted_at\n    FROM votes\n    GROUP BY poll_id\n  ) v ON v.poll_id = p.id\n  LEFT JOIN LATERAL (\n    SELECT\n      jsonb_agg(\n        jsonb_build_object(\n          'id', o.id,\n          'poll_id', o.poll_id,\n          'value', o.value,\n          'created_at', o.created_at,\n          'votes', COALESCE(ov.votes, 0)::int\n        ) ORDER BY o.created_at ASC\n      ) AS options\n    FROM options o\n    LEFT JOIN (\n      SELECT option_id, count(*)::int AS votes\n      FROM votes\n      WHERE option_id IS NOT NULL AND poll_id = p.id\n      GROUP BY option_id\n    ) ov ON ov.option_id = o.id\n    WHERE o.poll_id = p.id\n  ) opt ON true\n  LEFT JOIN LATERAL (\n    SELECT\n      jsonb_agg(\n        jsonb_build_object(\n          'emoji', e.emoji,\n          'count', COALESCE(rc.count, 0)::int\n        ) ORDER BY e.ord ASC\n      ) AS reaction_breakdown\n    FROM unnest(p.reaction_emojis) WITH ORDINALITY AS e(emoji, ord)\n    LEFT JOIN (\n      SELECT emoji, count(*)::int AS count\n      FROM reactions\n      WHERE poll_id = p.id\n      GROUP BY emoji\n    ) rc ON rc.emoji = e.emoji\n  ) rb ON true\n",
+      "name": "polls_details",
+      "schema": "public",
+      "isExisting": false,
+      "materialized": false
+    }
+  },
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
