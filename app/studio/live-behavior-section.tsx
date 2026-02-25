@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { IconMoodPlus, IconX } from "@tabler/icons-react";
 import dynamic from "next/dynamic";
-import type { StudioForm } from "@/app/app/page";
+import type { StudioForm } from "@/app/studio/page";
 import { MAX_REACTION_EMOJIS } from "@/utils/constants";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {

@@ -26,7 +26,7 @@ export function CallToAction() {
           </Text>
           <Button
             component={Link}
-            href="/app"
+            href="/studio"
             color="indigo"
             size="md"
             rightSection={<IconArrowRight size={16} />}

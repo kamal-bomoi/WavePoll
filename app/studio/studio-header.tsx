@@ -1,6 +1,6 @@
 import { Button, Group, Stack } from "@mantine/core";
 import { IconDeviceFloppy } from "@tabler/icons-react";
-import { WavePollHeader } from "@/app/app/wavepoll-header";
+import { WavePollHeader } from "@/app/studio/wavepoll-header";
 
 export function StudioHeader({
   can_submit,

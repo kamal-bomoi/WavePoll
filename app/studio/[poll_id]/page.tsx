@@ -15,7 +15,7 @@ import {
 import { IconUsers } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
-import { WavePollHeader } from "@/app/app/wavepoll-header";
+import { WavePollHeader } from "@/app/studio/wavepoll-header";
 import { NewPollButton } from "@/components/new-poll-button";
 import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";

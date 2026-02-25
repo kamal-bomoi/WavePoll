@@ -236,7 +236,7 @@ export function VoteForm({
             <Button
               variant="outline"
               color="indigo"
-              onClick={() => router.push(`/app/${poll.id}/result`)}
+              onClick={() => router.push(`/studio/${poll.id}/result`)}
             >
               View results
             </Button>

@@ -6,8 +6,8 @@ import Link from "next/link";
 
 export function Hero() {
   // const sample_poll_href = process.env.NEXT_PUBLIC_SAMPLE_POLL_ID
-  //   ? `/app/${process.env.NEXT_PUBLIC_SAMPLE_POLL_ID}`
-  //   : "/app";
+  //   ? `/studio/${process.env.NEXT_PUBLIC_SAMPLE_POLL_ID}`
+  //   : "/studio";
 
   return (
     <Paper
@@ -53,7 +53,7 @@ export function Hero() {
             <Group gap="sm" wrap="wrap">
               <Button
                 component={Link}
-                href="/app"
+                href="/studio"
                 color="indigo"
                 size="md"
                 rightSection={<IconArrowRight size={16} />}

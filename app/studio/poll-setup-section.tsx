@@ -20,7 +20,7 @@ import {
   IconTrash
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import type { StudioForm } from "@/app/app/page";
+import type { StudioForm } from "@/app/studio/page";
 import type { PollStatus, PollType } from "@/lib/db/schema";
 import { MAX_OPTIONS } from "@/utils/constants";
 

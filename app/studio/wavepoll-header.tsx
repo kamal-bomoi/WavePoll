@@ -13,7 +13,7 @@ export function WavePollHeader({
   subtitle?: string;
 }) {
   const pathname = usePathname();
-  const show_back_to_studio = pathname !== "/app";
+  const show_back_to_studio = pathname !== "/studio";
 
   return (
     <Stack gap={6}>
@@ -37,7 +37,7 @@ export function WavePollHeader({
         {show_back_to_studio && (
           <Button
             component={Link}
-            href="/app"
+            href="/studio"
             variant="light"
             color="indigo"
             leftSection={<IconHome2 size={16} />}

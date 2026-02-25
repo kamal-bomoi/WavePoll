@@ -14,8 +14,8 @@ import {
 } from "@mantine/core";
 import { IconWaveSine } from "@tabler/icons-react";
 import { useParams } from "next/navigation";
-import { PollOption } from "@/app/app/[poll_id]/result/poll-option";
-import { VoteForm } from "@/app/app/[poll_id]/vote-form";
+import { PollOption } from "@/app/studio/[poll_id]/result/poll-option";
+import { VoteForm } from "@/app/studio/[poll_id]/vote-form";
 import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";
 import { useQuery } from "@/hooks/use-query";

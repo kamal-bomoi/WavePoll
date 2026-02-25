@@ -20,7 +20,7 @@ export function Header() {
         <Group gap="sm">
           <Button
             component={Link}
-            href="/app"
+            href="/studio"
             color="indigo"
             rightSection={<IconArrowRight size={16} />}
           >

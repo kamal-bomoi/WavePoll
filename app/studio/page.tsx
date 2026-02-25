@@ -6,11 +6,11 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { HistoryPollsSection } from "@/app/app/history-polls-section";
-import { LiveBehaviorSection } from "@/app/app/live-behavior-section";
-import { PollSetupSection } from "@/app/app/poll-setup-section";
-import { StudioHeader } from "@/app/app/studio-header";
-import { UserPollsSection } from "@/app/app/user-polls-section";
+import { HistoryPollsSection } from "@/app/studio/history-polls-section";
+import { LiveBehaviorSection } from "@/app/studio/live-behavior-section";
+import { PollSetupSection } from "@/app/studio/poll-setup-section";
+import { StudioHeader } from "@/app/studio/studio-header";
+import { UserPollsSection } from "@/app/studio/user-polls-section";
 import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { useMutation } from "@/hooks/use-mutation";
 import { useUpdateQuery } from "@/hooks/use-update-query";
@@ -124,7 +124,7 @@ export default function StudioPage() {
 
           set_image_files([null, null]);
 
-          if (poll.status === "live") router.push(`/app/${poll.id}`);
+          if (poll.status === "live") router.push(`/studio/${poll.id}`);
         }
       }
     );
