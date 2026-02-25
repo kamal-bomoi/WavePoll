@@ -102,7 +102,7 @@ yarn dev
 
 Open: `http://localhost:3000`
 
-## Important Dev Note: Realtime + Presence
+## Dev Note: Realtime + Presence
 
 With the local `serverless-redis-http` container, **presence and realtime do not work**.
 
@@ -128,7 +128,6 @@ Base local variables are in `.env.example`.
 Primary ones:
 
 - `NODE_ENV`
-- `DATABASE_URL`
 - `APP_BASE_URL`
 - `COOKIE_SECRET` (minimum 32 characters)
 - `UPSTASH_REDIS_REST_URL`
@@ -139,6 +138,23 @@ Primary ones:
 - `S3_ACCESS_KEY_ID`
 - `S3_SECRET_ACCESS_KEY`
 - `NEXT_PUBLIC_S3_URL`
+
+Database configuration:
+
+- You can configure the database using either:
+  - `DATABASE_URL`
+  - or all of:
+    - `DATABASE_HOST`
+    - `DATABASE_PORT`
+    - `DATABASE_NAME`
+    - `DATABASE_USER`
+    - `DATABASE_PASSWORD`
+- If both `DATABASE_URL` and the individual fields are set, `DATABASE_URL` takes precedence.
+
+Production-only TLS note (`NODE_ENV=production`):
+
+- `DATABASE_CA_CERT` (optional)
+- `DATABASE_TLS_REJECT_UNAUTHORIZED` (optional)
 
 ### Feature-Specific Environment Variables
 

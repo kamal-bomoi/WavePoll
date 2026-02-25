@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+import { isServer } from "@tanstack/react-query";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -6,7 +7,15 @@ export const env = createEnv({
     DATABASE_URL: z
       .string()
       .startsWith("postgres://")
-      .or(z.string().startsWith("postgresql://")),
+      .or(z.string().startsWith("postgresql://"))
+      .optional(),
+    DATABASE_HOST: z.string().optional(),
+    DATABASE_PORT: z.coerce.number().int().positive().optional(),
+    DATABASE_NAME: z.string().optional(),
+    DATABASE_USER: z.string().optional(),
+    DATABASE_PASSWORD: z.string().optional(),
+    DATABASE_CA_CERT: z.string().optional(),
+    DATABASE_TLS_REJECT_UNAUTHORIZED: z.coerce.boolean().optional(),
     COOKIE_SECRET: z.string().min(32),
     UPSTASH_REDIS_REST_URL: z.url(),
     UPSTASH_REDIS_REST_TOKEN: z.string(),
@@ -31,6 +40,14 @@ export const env = createEnv({
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_HOST: process.env.DATABASE_HOST,
+    DATABASE_PORT: process.env.DATABASE_PORT,
+    DATABASE_NAME: process.env.DATABASE_NAME,
+    DATABASE_USER: process.env.DATABASE_USER,
+    DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
+    DATABASE_CA_CERT: process.env.DATABASE_CA_CERT,
+    DATABASE_TLS_REJECT_UNAUTHORIZED:
+      process.env.DATABASE_TLS_REJECT_UNAUTHORIZED,
     COOKIE_SECRET: process.env.COOKIE_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
@@ -57,3 +74,19 @@ export const env = createEnv({
   },
   emptyStringAsUndefined: true
 });
+
+if (isServer) {
+  const has_url = !!env.DATABASE_URL;
+  const has_individual = !!(
+    env.DATABASE_HOST &&
+    env.DATABASE_PORT &&
+    env.DATABASE_NAME &&
+    env.DATABASE_USER &&
+    env.DATABASE_PASSWORD
+  );
+
+  if (!has_url && !has_individual)
+    throw new Error(
+      "Either DATABASE_URL or all of DATABASE_HOST, DATABASE_PORT, DATABASE_NAME, DATABASE_USER, DATABASE_PASSWORD must be provided"
+    );
+}

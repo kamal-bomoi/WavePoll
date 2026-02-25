@@ -15,8 +15,7 @@
     "db:generate": "cross-env NODE_ENV=development drizzle-kit generate",
     "db:push": "cross-env NODE_ENV=development drizzle-kit push",
     "db:migrate:dev": "cross-env NODE_ENV=development drizzle-kit migrate",
-    "db:migrate:prod": "cross-env NODE_ENV=production drizzle-kit migrate",
-    "db:pull": "cross-env NODE_ENV=development drizzle-kit pull"
+    "db:migrate:prod": "infisical run -- drizzle-kit migrate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",
