@@ -16,12 +16,14 @@ export const POST = route<
   { poll_id: string }
 >(
   async ({ body, params }) => {
-    const poll = await db.query.polls.findFirst({
-      columns: { id: true },
-      where: eq(polls.id, params.poll_id)
-    });
+    if (body.action === "join") {
+      const poll = await db.query.polls.findFirst({
+        columns: { id: true },
+        where: eq(polls.id, params.poll_id)
+      });
 
-    if (!poll) throw WavePollError.NotFound("Poll does not exist.");
+      if (!poll) throw WavePollError.NotFound("Poll does not exist.");
+    }
 
     const now = Date.now();
     const timeout_score = now - PRESENCE_TIMEOUT_MS;
@@ -53,7 +55,7 @@ export const POST = route<
       }),
       body: z.object({
         action: z.enum(["join", "heartbeat", "leave"]),
-        viewer_id: z.string().trim().min(1)
+        viewer_id: z.string().trim().length(21)
       })
     }
   }

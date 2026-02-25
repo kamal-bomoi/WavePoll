@@ -37,7 +37,7 @@ const credentials = has_url
             }),
             ...(process.env.DATABASE_TLS_REJECT_UNAUTHORIZED && {
               rejectUnauthorized:
-                process.env.DATABASE_TLS_REJECT_UNAUTHORIZED !== "true"
+                process.env.DATABASE_TLS_REJECT_UNAUTHORIZED === "true"
             })
           }
     };

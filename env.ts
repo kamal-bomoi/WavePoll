@@ -1,5 +1,4 @@
 import { createEnv } from "@t3-oss/env-nextjs";
-import { isServer } from "@tanstack/react-query";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -75,7 +74,7 @@ export const env = createEnv({
   emptyStringAsUndefined: true
 });
 
-if (isServer) {
+if (typeof window === "undefined") {
   const has_url = !!env.DATABASE_URL;
   const has_individual = !!(
     env.DATABASE_HOST &&

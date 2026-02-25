@@ -6,10 +6,14 @@ import type { Poll } from "@/types";
 
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
-export async function send_poll_ended_summary_email(poll: Poll): Promise<void> {
+export async function send_poll_ended_summary_email({
+  poll,
+  owner_email
+}: {
+  poll: Poll;
+  owner_email: string;
+}): Promise<void> {
   if (!resend || !env.EMAIL_FROM) return;
-
-  if (!poll.owner_email) throw new Error("Poll does not have an owner email.");
 
   const result_url = `${env.APP_BASE_URL}/studio/${poll.id}/result`;
   const subject = `Your WavePoll has ended: ${poll.title}`;
@@ -24,7 +28,7 @@ export async function send_poll_ended_summary_email(poll: Poll): Promise<void> {
   try {
     const { error } = await resend.emails.send({
       from: env.EMAIL_FROM,
-      to: [poll.owner_email],
+      to: [owner_email],
       subject,
       text,
       html

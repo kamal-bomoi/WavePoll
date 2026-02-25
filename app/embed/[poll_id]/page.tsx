@@ -93,7 +93,7 @@ export default function EmbedPollPage() {
             </Text>
           </Group>
 
-          {poll.type === "single" && (
+          {(poll.type === "single" || poll.type === "image") && (
             <Stack gap={8}>
               {poll.options.map((option) => (
                 <PollOption

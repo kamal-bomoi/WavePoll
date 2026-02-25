@@ -84,7 +84,7 @@ export function route<
           try {
             body = (await req.json()) as TBody;
           } catch {
-            body = {} as TBody;
+            throw WavePollError.UnprocessableEntity("Invalid JSON body.");
           }
         } else body = {} as TBody;
 
@@ -185,7 +185,7 @@ async function validate<
     try {
       raw_body = await req.json();
     } catch {
-      raw_body = {};
+      throw WavePollError.UnprocessableEntity("Invalid JSON body.");
     }
   }
 

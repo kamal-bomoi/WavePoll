@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query";
 import type { CreatePollPayload, Poll, UploadUrl, VotePayload } from "@/types";
 import { upload } from "@/utils/upload";
 import { api } from "./client";
@@ -29,10 +30,16 @@ export const mutations = {
       cleanup: (keys) => api.delete("/polls/images", { data: { keys } })
     });
 
-    return api.post("/polls", {
-      ...poll_payload,
-      options: keys
-    } satisfies CreatePollPayload);
+    try {
+      return await api.post("/polls", {
+        ...poll_payload,
+        options: keys
+      } satisfies CreatePollPayload);
+    } catch (e) {
+      await api.delete("/polls/images", { data: { keys } }).catch(noop);
+
+      throw e;
+    }
   },
 
   "publish poll": ({ poll_id }: { poll_id: string }): Promise<Poll> =>
@@ -42,7 +49,7 @@ export const mutations = {
     api.patch(`/polls/${poll_id}`, { status: "draft" }),
 
   "delete poll": ({ poll_id }: { poll_id: string }): Promise<undefined> =>
-    api.delete(`/polls/${poll_id}`),
+    api.delete(`/polls/${poll_id}`, { data: {} }),
 
   vote: ({
     poll_id,

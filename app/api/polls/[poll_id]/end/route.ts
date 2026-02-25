@@ -24,7 +24,7 @@ async function handler(
   try {
     const poll = await db.query.polls.findFirst({
       where: eq(polls.id, poll_id),
-      columns: { id: true, end_at: true }
+      columns: { id: true, end_at: true, owner_email: true }
     });
 
     if (!poll) return Response.json({ ok: true });
@@ -53,8 +53,13 @@ async function handler(
       throw inner_error;
     }
 
-    if (next_poll.owner_email && env.RESEND_API_KEY)
-      waitUntil(send_poll_ended_summary_email(next_poll));
+    if (poll.owner_email && env.RESEND_API_KEY)
+      waitUntil(
+        send_poll_ended_summary_email({
+          poll: next_poll,
+          owner_email: poll.owner_email
+        })
+      );
 
     return Response.json({ ok: true });
   } catch (outer_error) {

@@ -40,7 +40,7 @@ export async function get_owner_polls(owner_id: string): Promise<Poll[]> {
 }
 
 function map_poll(row: PollDetail): Poll {
-  const { owner_id: _owner_id, ...poll } = row;
+  const { owner_id: _owner_id, owner_email: _owner_email, ...poll } = row;
 
   return {
     ...poll,

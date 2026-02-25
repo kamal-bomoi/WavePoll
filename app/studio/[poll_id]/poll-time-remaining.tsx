@@ -13,9 +13,6 @@ export function PollTimeRemaining({
     <ReactCountdown
       date={time}
       onComplete={on_complete}
-      onMount={({ completed }) => {
-        if (completed) on_complete();
-      }}
       renderer={({ days, hours, minutes, seconds, completed }) => {
         if (completed) return <PollEndedAlert />;
 
