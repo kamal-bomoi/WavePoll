@@ -40,7 +40,7 @@ async function setup() {
   try {
     await s3.send(new CreateBucketCommand({ Bucket: bucket }));
 
-    console.log(`✅ Bucket "${bucket}" created`);
+    console.log(`Bucket "${bucket}" created`);
   } catch (e) {
     const error = e as Error;
 
@@ -48,7 +48,7 @@ async function setup() {
       error.name === "BucketAlreadyOwnedByYou" ||
       error.name === "BucketAlreadyExists"
     )
-      console.log(`ℹ️  Bucket "${bucket}" already exists.`);
+      console.log(`Bucket "${bucket}" already exists.`);
     else throw e;
   }
 
@@ -69,10 +69,10 @@ async function setup() {
     })
   );
 
-  console.log(`✅ Bucket "${bucket}" is ready and public`);
+  console.log(`Bucket "${bucket}" is ready and public`);
 }
 
 setup().catch((e) => {
-  console.error("❌ Storage setup failed:", e);
+  console.error("Storage setup failed:", e);
   process.exit(1);
 });

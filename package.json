@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "cross-env NODE_ENV=development node scripts/minio.ts",
+    "setup:storage:dev": "node scripts/minio.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "format": "biome format --write",
+    "lint": "biome check --write",
     "db:studio": "cross-env NODE_ENV=development drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:push": "cross-env NODE_ENV=development drizzle-kit push",
@@ -71,5 +73,9 @@
     "type-fest": "^5.4.4",
     "typescript": "^5.9.3"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "yarn@4.12.0",
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "engineStrict": true
 }
