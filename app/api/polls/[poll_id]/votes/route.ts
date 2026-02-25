@@ -1,11 +1,9 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import z from "zod";
-import { env } from "@/env";
 import { db } from "@/lib/db/client";
 import { polls, reactions, votes } from "@/lib/db/schema";
 import { emit_poll_new_comment, emit_poll_updated } from "@/lib/realtime";
+import { get_or_set_anon_id } from "@/lib/session";
 import type { Vote, VotePayload } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
@@ -64,7 +62,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
         throw WavePollError.UnprocessableEntity("Invalid reaction emoji.");
     }
 
-    const voter_key = await get_voter_key();
+    const anon_id = await get_or_set_anon_id();
 
     let vote: Vote;
 
@@ -75,7 +73,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
           .values({
             id: nanoid.id(),
             poll_id: poll.id,
-            voter_key,
+            anon_id,
             option_id: "option_id" in body ? body.option_id : null,
             rating: "rating" in body ? body.rating : null,
             comment: "comment" in body ? body.comment : null
@@ -95,7 +93,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
           await tx.insert(reactions).values({
             id: nanoid.id(),
             poll_id: poll.id,
-            voter_key,
+            anon_id,
             emoji: body.reaction
           });
 
@@ -150,33 +148,6 @@ export const POST = route<VotePayload, { poll_id: string }>(
   }
 );
 
-const VOTER_COOKIE_NAME = "wavepoll_voter_key";
-
-async function get_voter_key(): Promise<string> {
-  const cookie_store = await cookies();
-  const from_cookie = cookie_store.get(VOTER_COOKIE_NAME)?.value;
-  const signed = extract_signed_voter_key(from_cookie);
-
-  if (from_cookie && !signed)
-    throw WavePollError.BadRequest(
-      "Invalid session. Please clear your cookies and try again."
-    );
-
-  const value = signed ?? nanoid();
-
-  cookie_store.set({
-    name: VOTER_COOKIE_NAME,
-    value: to_signed_voter_key(value),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365 * 10
-  });
-
-  return value;
-}
-
 function is_unique_violation(error: unknown) {
   return (
     error instanceof Error &&
@@ -185,39 +156,4 @@ function is_unique_violation(error: unknown) {
     "code" in error.cause &&
     error.cause.code === "23505"
   );
-}
-
-function to_signed_voter_key(voter_key: string): string {
-  return `${voter_key}.${sign(voter_key)}`;
-}
-
-function extract_signed_voter_key(value: string | undefined): string | null {
-  if (!value) return null;
-
-  const separator_index = value.lastIndexOf(".");
-
-  if (separator_index <= 0 || separator_index === value.length - 1) return null;
-
-  const voter_key = value.slice(0, separator_index);
-  const signature = value.slice(separator_index + 1);
-  const expected_signature = sign(voter_key);
-
-  if (!safe_equal(signature, expected_signature)) return null;
-
-  return voter_key;
-}
-
-function sign(value: string): string {
-  return createHmac("sha256", env.COOKIE_SECRET)
-    .update(value)
-    .digest("base64url");
-}
-
-function safe_equal(a: string, b: string): boolean {
-  const left = Buffer.from(a);
-  const right = Buffer.from(b);
-
-  if (left.length !== right.length) return false;
-
-  return timingSafeEqual(left, right);
 }

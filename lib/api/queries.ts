@@ -20,15 +20,7 @@ export const queries = {
   polls: {
     key: () => ["polls"],
 
-    fn: (poll_ids: string[]): Promise<Poll[]> => {
-      if (!poll_ids.length) return Promise.resolve([]);
-
-      return api.get("/polls", {
-        params: {
-          ids: poll_ids.join(",")
-        }
-      });
-    }
+    fn: (): Promise<Poll[]> => api.get("/polls")
   },
   history_polls: {
     key: (poll_ids: string[]) => ["history-polls", poll_ids],

@@ -1,5 +1,5 @@
 {
-  "id": "c3f15d0b-4621-45c8-b787-f7707b524356",
+  "id": "6641a92f-6ef2-4f08-838d-32078e0c3658",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -91,6 +91,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "owner_email": {
           "name": "owner_email",
           "type": "text",
@@ -150,7 +156,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_polls_owner_id": {
+          "name": "idx_polls_owner_id",
+          "columns": [
+            {
+              "expression": "owner_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -174,8 +196,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "voter_key": {
-          "name": "voter_key",
+        "anon_id": {
+          "name": "anon_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -228,12 +250,12 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "reactions_poll_id_voter_key_unique": {
-          "name": "reactions_poll_id_voter_key_unique",
+        "reactions_poll_id_anon_id_unique": {
+          "name": "reactions_poll_id_anon_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "poll_id",
-            "voter_key"
+            "anon_id"
           ]
         }
       },
@@ -257,8 +279,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "voter_key": {
-          "name": "voter_key",
+        "anon_id": {
+          "name": "anon_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -352,12 +374,12 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "votes_poll_id_voter_key_unique": {
-          "name": "votes_poll_id_voter_key_unique",
+        "votes_poll_id_anon_id_unique": {
+          "name": "votes_poll_id_anon_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "poll_id",
-            "voter_key"
+            "anon_id"
           ]
         }
       },
@@ -366,6 +388,10 @@
         "votes_rating_check": {
           "name": "votes_rating_check",
           "value": "\"votes\".\"rating\" >= 1 AND \"votes\".\"rating\" <= 5"
+        },
+        "votes_exactly_one": {
+          "name": "votes_exactly_one",
+          "value": "num_nonnulls(\"votes\".\"option_id\", \"votes\".\"rating\", \"votes\".\"comment\") = 1"
         }
       },
       "isRLSEnabled": false
@@ -400,6 +426,12 @@
       "columns": {
         "id": {
           "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -497,7 +529,7 @@
           "notNull": true
         }
       },
-      "definition": "\n  SELECT\n    p.id,\n    p.owner_email,\n    p.title,\n    p.description,\n    p.type,\n    p.status,\n    p.end_at,\n    p.reaction_emojis,\n    p.created_at,\n    p.updated_at,\n    v.last_voted_at,\n    COALESCE(v.total_votes, 0)::int AS total_votes,\n    COALESCE(v.text_responses_count, 0)::int AS text_responses_count,\n    v.rating_average,\n    COALESCE(opt.options, '[]'::jsonb) AS options,\n    COALESCE(rb.reaction_breakdown, '[]'::jsonb) AS reaction_breakdown\n  FROM polls p\n  LEFT JOIN (\n    SELECT\n      poll_id,\n      count(*)::int AS total_votes,\n      count(comment)::int AS text_responses_count,\n      avg(rating)::double precision AS rating_average,\n      max(created_at) AS last_voted_at\n    FROM votes\n    GROUP BY poll_id\n  ) v ON v.poll_id = p.id\n  LEFT JOIN LATERAL (\n    SELECT\n      jsonb_agg(\n        jsonb_build_object(\n          'id', o.id,\n          'poll_id', o.poll_id,\n          'value', o.value,\n          'created_at', o.created_at,\n          'votes', COALESCE(ov.votes, 0)::int\n        ) ORDER BY o.created_at ASC\n      ) AS options\n    FROM options o\n    LEFT JOIN (\n      SELECT option_id, count(*)::int AS votes\n      FROM votes\n      WHERE option_id IS NOT NULL AND poll_id = p.id\n      GROUP BY option_id\n    ) ov ON ov.option_id = o.id\n    WHERE o.poll_id = p.id\n  ) opt ON true\n  LEFT JOIN LATERAL (\n    SELECT\n      jsonb_agg(\n        jsonb_build_object(\n          'emoji', e.emoji,\n          'count', COALESCE(rc.count, 0)::int\n        ) ORDER BY e.ord ASC\n      ) AS reaction_breakdown\n    FROM unnest(p.reaction_emojis) WITH ORDINALITY AS e(emoji, ord)\n    LEFT JOIN (\n      SELECT emoji, count(*)::int AS count\n      FROM reactions\n      WHERE poll_id = p.id\n      GROUP BY emoji\n    ) rc ON rc.emoji = e.emoji\n  ) rb ON true\n",
+      "definition": "\n  SELECT\n    p.id,\n    p.owner_id,\n    p.owner_email,\n    p.title,\n    p.description,\n    p.type,\n    p.status,\n    p.end_at,\n    p.reaction_emojis,\n    p.created_at,\n    p.updated_at,\n    v.last_voted_at,\n    COALESCE(v.total_votes, 0)::int AS total_votes,\n    COALESCE(v.text_responses_count, 0)::int AS text_responses_count,\n    v.rating_average,\n    COALESCE(opt.options, '[]'::jsonb) AS options,\n    COALESCE(rb.reaction_breakdown, '[]'::jsonb) AS reaction_breakdown\n  FROM polls p\n  LEFT JOIN (\n    SELECT\n      poll_id,\n      count(*)::int AS total_votes,\n      count(comment)::int AS text_responses_count,\n      avg(rating)::double precision AS rating_average,\n      max(created_at) AS last_voted_at\n    FROM votes\n    GROUP BY poll_id\n  ) v ON v.poll_id = p.id\n  LEFT JOIN LATERAL (\n    SELECT\n      jsonb_agg(\n        jsonb_build_object(\n          'id', o.id,\n          'poll_id', o.poll_id,\n          'value', o.value,\n          'created_at', o.created_at,\n          'votes', COALESCE(ov.votes, 0)::int\n        ) ORDER BY o.created_at ASC\n      ) AS options\n    FROM options o\n    LEFT JOIN (\n      SELECT option_id, count(*)::int AS votes\n      FROM votes\n      WHERE option_id IS NOT NULL AND poll_id = p.id\n      GROUP BY option_id\n    ) ov ON ov.option_id = o.id\n    WHERE o.poll_id = p.id\n  ) opt ON true\n  LEFT JOIN LATERAL (\n    SELECT\n      jsonb_agg(\n        jsonb_build_object(\n          'emoji', e.emoji,\n          'count', COALESCE(rc.count, 0)::int\n        ) ORDER BY e.ord ASC\n      ) AS reaction_breakdown\n    FROM unnest(p.reaction_emojis) WITH ORDINALITY AS e(emoji, ord)\n    LEFT JOIN (\n      SELECT emoji, count(*)::int AS count\n      FROM reactions\n      WHERE poll_id = p.id\n      GROUP BY emoji\n    ) rc ON rc.emoji = e.emoji\n  ) rb ON true\n",
       "name": "polls_details",
       "schema": "public",
       "isExisting": false,

@@ -5,20 +5,24 @@ import { db } from "@/lib/db/client";
 import { options, poll_status, poll_type, polls } from "@/lib/db/schema";
 import { schedule_poll_end } from "@/lib/qstash";
 import { emit_poll_updated } from "@/lib/realtime";
+import { get_or_set_anon_id } from "@/lib/session";
 import type { CreatePollPayload } from "@/types";
 import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
-import { get_poll, get_polls } from "@/utils/poll-server";
+import { get_owner_polls, get_poll, get_polls } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 export const POST = route<CreatePollPayload>(
   async ({ body }) => {
+    const anon_id = await get_or_set_anon_id();
+
     const poll = await db.transaction(async (tx) => {
       const [inserted] = await tx
         .insert(polls)
         .values({
           id: nanoid.id(),
+          owner_id: anon_id,
           title: body.title.trim(),
           type: body.type,
           status: body.status,
@@ -101,16 +105,22 @@ export const POST = route<CreatePollPayload>(
   }
 );
 
-export const GET = route<undefined, Record<string, string>, { ids: string }>(
+export const GET = route<
+  undefined,
+  Record<string, string>,
+  { ids?: string | undefined }
+>(
   async ({ query }) => {
-    const ids = query.ids.split(",");
+    if (query.ids) return get_polls(query.ids.split(","));
 
-    return get_polls(ids);
+    const anon_id = await get_or_set_anon_id();
+
+    return get_owner_polls(anon_id);
   },
   {
     schema: {
       query: z.object({
-        ids: z.string()
+        ids: z.string().optional()
       })
     }
   }

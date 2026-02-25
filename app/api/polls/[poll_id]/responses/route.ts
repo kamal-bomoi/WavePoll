@@ -1,10 +1,12 @@
 import { and, desc, eq, lt, or } from "drizzle-orm";
 import z from "zod";
 import { db } from "@/lib/db/client";
-import { votes } from "@/lib/db/schema";
+import { polls, votes } from "@/lib/db/schema";
+import { assert_owner } from "@/lib/session";
 import type { PollResponsesPage } from "@/types";
 import { PAGINATION_LIMIT } from "@/utils/constants";
 import { route } from "@/utils/route";
+import { WavePollError } from "@/utils/wave-poll-error";
 
 export const GET = route<
   undefined,
@@ -12,6 +14,15 @@ export const GET = route<
   { cursor_created_at?: string; cursor_id?: string }
 >(
   async ({ params, query }) => {
+    const poll = await db.query.polls.findFirst({
+      columns: { id: true, owner_id: true },
+      where: eq(polls.id, params.poll_id)
+    });
+
+    if (!poll) throw WavePollError.NotFound("Poll does not exist.");
+
+    await assert_owner(poll.owner_id);
+
     const cursor_condition =
       query.cursor_created_at && query.cursor_id
         ? or(

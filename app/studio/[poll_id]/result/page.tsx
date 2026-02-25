@@ -16,17 +16,16 @@ import { WavePollHeader } from "@/app/studio/wavepoll-header";
 import { NewPollButton } from "@/components/new-poll-button";
 import { RealtimeIndicator } from "@/components/realtime-indicator";
 import { WaveAlert } from "@/components/wave-alert";
-import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { usePollQuery } from "@/hooks/use-poll-query";
+import { useQuery } from "@/hooks/use-query";
 import { is_poll_ended } from "@/utils/poll-generic";
 
 export default function ResultPage() {
   const params = useParams<{ poll_id: string }>();
-  const [poll_ids] = useLocalPollIds();
-  const is_owner_view = !!poll_ids?.includes(params.poll_id);
-  const query = usePollQuery(params.poll_id);
+  const poll_query = usePollQuery(params.poll_id);
+  const owner_polls_query = useQuery("polls");
 
-  if (query.isLoading)
+  if (poll_query.isLoading)
     return (
       <Center className="wave-page">
         <Stack align="center" gap="sm">
@@ -35,44 +34,45 @@ export default function ResultPage() {
       </Center>
     );
 
-  if (query.error)
+  if (poll_query.error)
     return (
       <Container size="md" className="wave-page">
-        <WaveAlert type="error" message={query.error} />
+        <WaveAlert type="error" message={poll_query.error} />
       </Container>
     );
 
-  if (query.data) {
-    const show_realtime_indicator =
-      query.data.status === "live" && !is_poll_ended(query.data);
+  if (!poll_query.data) return null;
 
-    return (
-      <div className="wave-page">
-        <Container size="md">
-          <Paper className="wave-slide-up">
-            <Stack gap="sm">
-              <WavePollHeader title="Results" />
-              {show_realtime_indicator && (
-                <Group justify="flex-end">
-                  <RealtimeIndicator />
-                </Group>
-              )}
-              <PollResultContent
-                poll={query.data}
-                is_owner_view={is_owner_view}
-              />
-              <Group justify="space-between" style={{ width: "100%" }}>
-                <Text size="sm" c="dimmed">
-                  {`Last updated ${dayjs(query.data.last_voted_at ?? query.data.created_at).fromNow()}`}
-                </Text>
-                <NewPollButton />
+  const is_owner_view =
+    owner_polls_query.data?.some((poll) => poll.id === params.poll_id) ?? false;
+
+  const show_realtime_indicator =
+    poll_query.data.status === "live" && !is_poll_ended(poll_query.data);
+
+  return (
+    <div className="wave-page">
+      <Container size="md">
+        <Paper className="wave-slide-up">
+          <Stack gap="sm">
+            <WavePollHeader title="Results" />
+            {show_realtime_indicator && (
+              <Group justify="flex-end">
+                <RealtimeIndicator />
               </Group>
-            </Stack>
-          </Paper>
-        </Container>
-      </div>
-    );
-  }
-
-  return null;
+            )}
+            <PollResultContent
+              poll={poll_query.data}
+              is_owner_view={is_owner_view}
+            />
+            <Group justify="space-between" style={{ width: "100%" }}>
+              <Text size="sm" c="dimmed">
+                {`Last updated ${dayjs(poll_query.data.last_voted_at ?? poll_query.data.created_at).fromNow()}`}
+              </Text>
+              <NewPollButton />
+            </Group>
+          </Stack>
+        </Paper>
+      </Container>
+    </div>
+  );
 }

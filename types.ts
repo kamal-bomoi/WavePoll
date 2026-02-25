@@ -16,7 +16,7 @@ export interface Timestamps {
 }
 
 export type Poll = Merge<
-  PollDetail,
+  Omit<PollDetail, "owner_id">,
   {
     presence: number;
     options: Option[];
@@ -27,7 +27,7 @@ export interface Generated extends Timestamps {
   id: string;
 }
 
-export type Vote = Omit<VoteRow, "poll_id" | "voter_key">;
+export type Vote = Omit<VoteRow, "poll_id" | "anon_id">;
 
 export interface PollResponsesPage {
   items: Vote[];
@@ -48,7 +48,7 @@ export type Option = Prettify<
 >;
 
 export type CreatePollPayload = Merge<
-  Omit<PollRow, keyof Generated>,
+  Omit<PollRow, keyof Generated | "owner_id">,
   {
     options: string[] | null;
     end_at: string;
@@ -87,3 +87,7 @@ export interface UploadUrl {
   key: string;
   url: string;
 }
+
+export type Nullishify<T> = {
+  [K in keyof T]: null extends T[K] ? T[K] | undefined : T[K];
+};

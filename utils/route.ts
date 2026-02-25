@@ -12,12 +12,14 @@ export interface RouteContext {
   params?: Promise<Record<string, string>>;
 }
 
+interface Context<TBody, TParams, TQuery> {
+  body: TBody;
+  params: TParams;
+  query: TQuery;
+}
+
 type TypedRouteHandler<TBody, TParams, TQuery> = (
-  context: {
-    body: TBody;
-    params: TParams;
-    query: TQuery;
-  },
+  context: Context<TBody, TParams, TQuery>,
   req: NextRequest
 ) => any;
 
@@ -91,7 +93,12 @@ export function route<
           req.nextUrl.searchParams.entries()
         ) as TQuery;
       }
-      const context = { body, params, query };
+
+      const context: Context<TBody, TParams, TQuery> = {
+        body,
+        params,
+        query
+      };
 
       const response = await handler(context, req);
 

@@ -28,7 +28,7 @@ export function HistoryPollCard({ poll }: { poll: Poll }) {
               {poll.type}
             </Badge>
             <Text size="xs" c={has_ended ? "red" : "dimmed"}>
-              {format_end_status(poll.end_at, has_ended)}
+              {format_end_status(new Date(poll.end_at), has_ended)}
             </Text>
           </Group>
         </Box>

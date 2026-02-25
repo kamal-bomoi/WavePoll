@@ -1,17 +1,18 @@
 import * as Sentry from "@sentry/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "@/env";
 import { db } from "@/lib/db/client";
 import { options, polls, reactions, votes } from "@/lib/db/schema";
 import { redis } from "@/lib/redis";
+import { assert_owner } from "@/lib/session";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { WavePollError } from "@/utils/wave-poll-error";
 
 const limiter = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(2, "1 h"),
+  limiter: Ratelimit.slidingWindow(5, "1 h"),
   prefix: "@wavepoll/ratelimit:csv_export"
 });
 
@@ -22,63 +23,67 @@ export async function GET(
   try {
     const { poll_id } = await ctx.params;
 
-    const requester_ip = get_requester_ip(req);
+    const ip = get_client_ip(req);
 
-    if (!requester_ip)
+    if (!ip)
       throw WavePollError.BadRequest("Unable to determine client IP address.");
 
-    await ratelimit(poll_id, requester_ip);
+    await ratelimit(poll_id, ip);
 
     const poll = await db.query.polls.findFirst({
-      columns: { id: true, title: true, type: true, end_at: true },
+      columns: {
+        id: true,
+        owner_id: true,
+        title: true,
+        type: true,
+        end_at: true
+      },
       where: eq(polls.id, poll_id)
     });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
+
+    await assert_owner(poll.owner_id);
 
     if (!is_poll_ended(poll))
       throw WavePollError.BadRequest(
         "CSV export is only available after poll ends."
       );
 
-    const [vote_rows, option_rows, reaction_rows] = await Promise.all([
+    const [vote_rows, option_rows] = await Promise.all([
       db
         .select({
           id: votes.id,
           created_at: votes.created_at,
-          voter_key: votes.voter_key,
           option_id: votes.option_id,
           rating: votes.rating,
-          comment: votes.comment
+          comment: votes.comment,
+          reaction: reactions.emoji
         })
         .from(votes)
+        .leftJoin(
+          reactions,
+          and(
+            eq(reactions.poll_id, votes.poll_id),
+            eq(reactions.anon_id, votes.anon_id)
+          )
+        )
         .where(eq(votes.poll_id, poll.id))
         .orderBy(desc(votes.created_at)),
       db
         .select({ id: options.id, value: options.value })
         .from(options)
-        .where(eq(options.poll_id, poll.id)),
-      db
-        .select({ voter_key: reactions.voter_key, emoji: reactions.emoji })
-        .from(reactions)
-        .where(eq(reactions.poll_id, poll.id))
+        .where(eq(options.poll_id, poll.id))
     ]);
 
     const option_by_id = new Map(
       option_rows.map((option) => [option.id, option.value])
     );
-    const reaction_by_voter_key = new Map(
-      reaction_rows.map((reaction) => [reaction.voter_key, reaction.emoji])
-    );
 
     const headers = [
-      "poll_id",
       "poll_title",
       "poll_type",
-      "vote_id",
       "created_at",
-      "voter_key",
-      "option_id",
       "option_value",
       "rating",
       "comment",
@@ -86,17 +91,13 @@ export async function GET(
     ];
 
     const rows = vote_rows.map((vote) => [
-      poll.id,
       poll.title,
       poll.type,
-      vote.id,
       vote.created_at.toISOString(),
-      vote.voter_key,
-      vote.option_id ?? "",
       vote.option_id ? (option_by_id.get(vote.option_id) ?? "") : "",
       vote.rating?.toString() ?? "",
       vote.comment ?? "",
-      reaction_by_voter_key.get(vote.voter_key) ?? ""
+      vote.reaction ?? ""
     ]);
 
     const csv = [headers, ...rows]
@@ -163,7 +164,7 @@ async function ratelimit(poll_id: string, ip: string): Promise<void> {
   }
 }
 
-function get_requester_ip(req: NextRequest): string | null {
+function get_client_ip(req: NextRequest): string | null {
   const cf_connecting_ip = req.headers.get("cf-connecting-ip");
   if (cf_connecting_ip) return cf_connecting_ip;
 

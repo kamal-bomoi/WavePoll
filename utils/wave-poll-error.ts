@@ -25,7 +25,9 @@ export class WavePollError extends Error {
     return new WavePollError(400, error);
   }
 
-  static Unauthorized(error: ErrorParam = "Not authorized.") {
+  static Unauthorized(
+    error: ErrorParam = "You are not authorized to perform this action."
+  ) {
     return new WavePollError(401, error);
   }
 

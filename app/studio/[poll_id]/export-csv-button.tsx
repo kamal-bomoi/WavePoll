@@ -6,10 +6,12 @@ import type { Poll } from "@/types";
 
 export function ExportCSVButton({
   poll,
-  has_ended
+  has_ended,
+  is_owner_view
 }: {
   poll: Poll;
   has_ended: boolean;
+  is_owner_view: boolean;
 }) {
   const [is_exporting, set_is_exporting] = useState(false);
 
@@ -23,7 +25,14 @@ export function ExportCSVButton({
     download_csv(poll.id, () => set_is_exporting(false));
   }
 
-  if (has_ended)
+  const can_export = is_owner_view && has_ended;
+  const tooltip = !is_owner_view
+    ? "Export is only available to the poll owner."
+    : !has_ended
+      ? "Export is available only after the poll ends."
+      : null;
+
+  if (can_export)
     return (
       <Button
         variant="subtle"
@@ -36,7 +45,7 @@ export function ExportCSVButton({
     );
 
   return (
-    <Tooltip label="Export is available only after the poll ends.">
+    <Tooltip label={tooltip}>
       <span>
         <Button
           variant="subtle"

@@ -157,7 +157,11 @@ export function PollResultContent({
           </Button>
           <SharePollButton />
         </Group>
-        <ExportCSVButton poll={poll} has_ended={has_ended} />
+        <ExportCSVButton
+          poll={poll}
+          has_ended={has_ended}
+          is_owner_view={is_owner_view}
+        />
       </Group>
     </Stack>
   );

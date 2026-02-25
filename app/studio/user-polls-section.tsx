@@ -1,20 +1,11 @@
 import { Divider, Group, Loader, Stack, Text } from "@mantine/core";
-import { useEffect } from "react";
 import { AbsoluteCenter } from "@/components/absolute-center";
-import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
+import { WaveAlert } from "@/components/wave-alert";
 import { useQuery } from "@/hooks/use-query";
 import { UserPollCard } from "./user-poll-card";
 
 export function UserPollsSection() {
-  const [poll_ids, set_poll_ids] = useLocalPollIds();
-  const { data, isFetching } = useQuery("polls", [poll_ids as string[]], {
-    enabled: !!poll_ids
-  });
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: set_poll_ids is a stable state setter
-  useEffect(() => {
-    if (data) set_poll_ids(data.map((poll) => poll.id));
-  }, [data]);
+  const { data, error, isFetching } = useQuery("polls");
 
   return (
     <Stack gap="md">
@@ -31,7 +22,8 @@ export function UserPollsSection() {
           </AbsoluteCenter>
         )}
         <Stack gap="lg">
-          {!data?.length ? (
+          {error && <WaveAlert type="error" message={error} />}
+          {!error && !data?.length ? (
             <Text c="dimmed" size="sm" ta="center">
               You haven't created any polls yet.
             </Text>

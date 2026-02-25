@@ -8,6 +8,7 @@ import type { PollStatus } from "@/lib/db/schema";
 import { polls } from "@/lib/db/schema";
 import { emit_poll_updated } from "@/lib/realtime";
 import { s3 } from "@/lib/s3";
+import { assert_owner } from "@/lib/session";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
@@ -29,13 +30,16 @@ export const GET = route<undefined, { poll_id: string }>(
 export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
   async ({ params, body }) => {
     const poll = await db.query.polls.findFirst({
-      columns: { id: true, status: true, end_at: true },
+      columns: { id: true, owner_id: true, status: true, end_at: true },
       where: eq(polls.id, params.poll_id)
     });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 
-    if (poll.status === body.status) return get_poll(poll.id);
+    await assert_owner(poll.owner_id);
+
+    if (poll.status === body.status)
+      throw WavePollError.BadRequest(`Poll is already in ${body.status} mode.`);
 
     const has_ended = is_poll_ended(poll);
 
@@ -75,6 +79,7 @@ export const DELETE = route<undefined, { poll_id: string }>(
     const poll = await db.query.polls.findFirst({
       columns: {
         id: true,
+        owner_id: true,
         type: true
       },
       with: {
@@ -88,6 +93,8 @@ export const DELETE = route<undefined, { poll_id: string }>(
     });
 
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
+
+    await assert_owner(poll.owner_id);
 
     await db.delete(polls).where(eq(polls.id, poll.id));
 

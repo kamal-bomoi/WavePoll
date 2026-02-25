@@ -10,6 +10,7 @@ CREATE TABLE "options" (
 --> statement-breakpoint
 CREATE TABLE "polls" (
 	"id" text PRIMARY KEY NOT NULL,
+	"owner_id" text NOT NULL,
 	"owner_email" text,
 	"title" text NOT NULL,
 	"description" text,
@@ -24,22 +25,23 @@ CREATE TABLE "polls" (
 CREATE TABLE "reactions" (
 	"id" text PRIMARY KEY NOT NULL,
 	"poll_id" text NOT NULL,
-	"voter_key" text NOT NULL,
+	"anon_id" text NOT NULL,
 	"emoji" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "reactions_poll_id_voter_key_unique" UNIQUE("poll_id","voter_key")
+	CONSTRAINT "reactions_poll_id_anon_id_unique" UNIQUE("poll_id","anon_id")
 );
 --> statement-breakpoint
 CREATE TABLE "votes" (
 	"id" text PRIMARY KEY NOT NULL,
 	"poll_id" text NOT NULL,
-	"voter_key" text NOT NULL,
+	"anon_id" text NOT NULL,
 	"option_id" text,
 	"rating" smallint,
 	"comment" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "votes_poll_id_voter_key_unique" UNIQUE("poll_id","voter_key"),
-	CONSTRAINT "votes_rating_check" CHECK ("votes"."rating" >= 1 AND "votes"."rating" <= 5)
+	CONSTRAINT "votes_poll_id_anon_id_unique" UNIQUE("poll_id","anon_id"),
+	CONSTRAINT "votes_rating_check" CHECK ("votes"."rating" >= 1 AND "votes"."rating" <= 5),
+	CONSTRAINT "votes_exactly_one" CHECK (num_nonnulls("votes"."option_id", "votes"."rating", "votes"."comment") = 1)
 );
 --> statement-breakpoint
 ALTER TABLE "options" ADD CONSTRAINT "options_poll_id_polls_id_fk" FOREIGN KEY ("poll_id") REFERENCES "public"."polls"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -47,12 +49,14 @@ ALTER TABLE "reactions" ADD CONSTRAINT "reactions_poll_id_polls_id_fk" FOREIGN K
 ALTER TABLE "votes" ADD CONSTRAINT "votes_poll_id_polls_id_fk" FOREIGN KEY ("poll_id") REFERENCES "public"."polls"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "votes" ADD CONSTRAINT "votes_option_id_options_id_fk" FOREIGN KEY ("option_id") REFERENCES "public"."options"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_poll_options_poll_id" ON "options" USING btree ("poll_id");--> statement-breakpoint
+CREATE INDEX "idx_polls_owner_id" ON "polls" USING btree ("owner_id");--> statement-breakpoint
 CREATE INDEX "idx_reactions_poll_id" ON "reactions" USING btree ("poll_id");--> statement-breakpoint
 CREATE INDEX "idx_votes_poll_id" ON "votes" USING btree ("poll_id");--> statement-breakpoint
 CREATE INDEX "idx_votes_option_id" ON "votes" USING btree ("option_id") WHERE "votes"."option_id" IS NOT NULL;--> statement-breakpoint
 CREATE VIEW "public"."polls_details" AS (
   SELECT
     p.id,
+    p.owner_id,
     p.owner_email,
     p.title,
     p.description,

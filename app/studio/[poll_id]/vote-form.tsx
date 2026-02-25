@@ -28,9 +28,11 @@ import { PollTimeRemaining } from "./poll-time-remaining";
 
 export function VoteForm({
   poll,
+  is_owner_view = false,
   mode = "default"
 }: {
   poll: Poll;
+  is_owner_view?: boolean;
   mode?: "default" | "embed";
 }) {
   const router = useRouter();
@@ -241,7 +243,11 @@ export function VoteForm({
               View results
             </Button>
 
-            <ExportCSVButton poll={poll} has_ended={has_ended} />
+            <ExportCSVButton
+              poll={poll}
+              has_ended={has_ended}
+              is_owner_view={is_owner_view}
+            />
           </Group>
         </Group>
       )}

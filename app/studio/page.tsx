@@ -11,7 +11,6 @@ import { LiveBehaviorSection } from "@/app/studio/live-behavior-section";
 import { PollSetupSection } from "@/app/studio/poll-setup-section";
 import { StudioHeader } from "@/app/studio/studio-header";
 import { UserPollsSection } from "@/app/studio/user-polls-section";
-import { useLocalPollIds } from "@/hooks/use-local-poll-ids";
 import { useMutation } from "@/hooks/use-mutation";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
@@ -23,7 +22,6 @@ export type StudioForm = UseFormReturnType<CreatePollPayload>;
 
 export default function StudioPage() {
   const router = useRouter();
-  const [, set_poll_ids] = useLocalPollIds();
   const mutation = useMutation("create poll");
   const update_query = useUpdateQuery();
   const [image_files, set_image_files] = useState<(File | null)[]>([
@@ -103,15 +101,6 @@ export default function StudioPage() {
       },
       {
         onSuccess(poll) {
-          set_poll_ids((previous) => {
-            const next_ids = [
-              poll.id,
-              ...(previous ?? []).filter((id) => id !== poll.id)
-            ];
-
-            return next_ids.slice(0, 100);
-          });
-
           update_query<Poll[]>(queries.polls.key(), (draft) => {
             draft.unshift(poll);
           });

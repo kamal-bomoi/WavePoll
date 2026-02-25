@@ -34,26 +34,31 @@ export const poll_type = pgEnum("poll_type", [
 ]);
 export const poll_status = pgEnum("poll_status", ["draft", "live"]);
 
-export const polls = pgTable("polls", {
-  id: text().primaryKey(),
-  owner_email: text(),
-  title: text().notNull(),
-  description: text(),
-  type: poll_type().notNull(),
-  status: poll_status().notNull(),
-  end_at: timestamp({ withTimezone: true }).notNull(),
-  reaction_emojis: text().array(),
-  created_at: timestamp({
-    withTimezone: true
-  })
-    .notNull()
-    .defaultNow(),
-  updated_at: timestamp({
-    withTimezone: true
-  })
-    .notNull()
-    .defaultNow()
-});
+export const polls = pgTable(
+  "polls",
+  {
+    id: text().primaryKey(),
+    owner_id: text().notNull(),
+    owner_email: text(),
+    title: text().notNull(),
+    description: text(),
+    type: poll_type().notNull(),
+    status: poll_status().notNull(),
+    end_at: timestamp({ withTimezone: true }).notNull(),
+    reaction_emojis: text().array(),
+    created_at: timestamp({
+      withTimezone: true
+    })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp({
+      withTimezone: true
+    })
+      .notNull()
+      .defaultNow()
+  },
+  (t) => [index("idx_polls_owner_id").on(t.owner_id)]
+);
 
 export const options = pgTable(
   "options",
@@ -82,7 +87,7 @@ export const votes = pgTable(
     poll_id: text()
       .notNull()
       .references(() => polls.id, { onDelete: "cascade" }),
-    voter_key: text().notNull(),
+    anon_id: text().notNull(),
     option_id: text().references(() => options.id, { onDelete: "set null" }),
     rating: smallint(),
     comment: text(),
@@ -93,12 +98,16 @@ export const votes = pgTable(
       .defaultNow()
   },
   (t) => [
-    unique("votes_poll_id_voter_key_unique").on(t.poll_id, t.voter_key),
+    unique("votes_poll_id_anon_id_unique").on(t.poll_id, t.anon_id),
     check("votes_rating_check", sql`${t.rating} >= 1 AND ${t.rating} <= 5`),
     index("idx_votes_poll_id").on(t.poll_id),
     index("idx_votes_option_id")
       .on(t.option_id)
-      .where(sql`${t.option_id} IS NOT NULL`)
+      .where(sql`${t.option_id} IS NOT NULL`),
+    check(
+      "votes_exactly_one",
+      sql`num_nonnulls(${t.option_id}, ${t.rating}, ${t.comment}) = 1`
+    )
   ]
 );
 
@@ -109,7 +118,7 @@ export const reactions = pgTable(
     poll_id: text()
       .notNull()
       .references(() => polls.id, { onDelete: "cascade" }),
-    voter_key: text().notNull(),
+    anon_id: text().notNull(),
     emoji: text().notNull(),
     created_at: timestamp({
       withTimezone: true
@@ -118,7 +127,7 @@ export const reactions = pgTable(
       .defaultNow()
   },
   (t) => [
-    unique("reactions_poll_id_voter_key_unique").on(t.poll_id, t.voter_key),
+    unique("reactions_poll_id_anon_id_unique").on(t.poll_id, t.anon_id),
     index("idx_reactions_poll_id").on(t.poll_id)
   ]
 );
@@ -157,6 +166,7 @@ export const reactions_relations = relations(reactions, ({ one }) => ({
 
 export const polls_details = pgView("polls_details", {
   id: text().notNull(),
+  owner_id: text().notNull(),
   owner_email: text(),
   title: text().notNull(),
   description: text(),
@@ -196,6 +206,7 @@ export const polls_details = pgView("polls_details", {
 }).as(sql`
   SELECT
     p.id,
+    p.owner_id,
     p.owner_email,
     p.title,
     p.description,
