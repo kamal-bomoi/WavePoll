@@ -1,4 +1,4 @@
-import { Divider, Group, Loader, Stack, Text } from "@mantine/core";
+import { Button, Group, Loader, Stack, Text } from "@mantine/core";
 import { useEffect } from "react";
 import { AbsoluteCenter } from "@/components/absolute-center";
 import { useLocalHistoryPollIds } from "@/hooks/use-local-history-poll-ids";
@@ -22,7 +22,27 @@ export function HistoryPollsSection() {
 
   return (
     <Stack gap="md">
-      <Divider label="History" />
+      <Group justify="space-between" align="center">
+        <Text fw={600} size="sm">
+          History
+        </Text>
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          color="gray"
+          disabled={!history_ids?.length}
+          onClick={() => {
+            if (
+              window.confirm(
+                "Are you sure you want to clear your poll history?"
+              )
+            )
+              set_history_ids([]);
+          }}
+        >
+          Clear history
+        </Button>
+      </Group>
       <Stack gap={8}>
         {isFetching && (
           <AbsoluteCenter>

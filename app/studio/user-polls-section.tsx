@@ -31,7 +31,7 @@ export function UserPollsSection() {
           </AbsoluteCenter>
         )}
         <Stack gap="lg">
-          {data && !data?.length ? (
+          {!data?.length ? (
             <Text c="dimmed" size="sm" ta="center">
               You haven't created any polls yet.
             </Text>

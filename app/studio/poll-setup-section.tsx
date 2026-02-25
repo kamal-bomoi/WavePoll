@@ -84,6 +84,7 @@ export function PollSetupSection({
       />
       <Select
         label="Status"
+        required
         data={poll_status_options}
         {...form.getInputProps("status")}
       />

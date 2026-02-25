@@ -10,7 +10,7 @@ export function Footer() {
         </Text>
         <Button
           component="a"
-          href="https://github.com/kamalyusuf/WavePoll"
+          href="https://github.com/kamal-bomoi/WavePoll"
           target="_blank"
           rel="noreferrer"
           variant="subtle"

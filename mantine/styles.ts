@@ -1,5 +1,5 @@
 import type { MantineThemeComponents } from "@mantine/core";
-import { Badge, Button, Paper, TextInput } from "@mantine/core";
+import { Badge, Button, InputWrapper, Paper } from "@mantine/core";
 
 export const styles: MantineThemeComponents = {
   Paper: Paper.extend({
@@ -27,7 +27,7 @@ export const styles: MantineThemeComponents = {
       tt: "uppercase"
     }
   }),
-  TextInput: TextInput.extend({
+  InputWrapper: InputWrapper.extend({
     styles: {
       error: {
         fontSize: "14px"

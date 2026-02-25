@@ -42,6 +42,8 @@ export default function StudioPage() {
       reaction_emojis: null
     },
     validate: {
+      type: (value) => (value ? null : "Poll type is required."),
+      status: (value) => (value ? null : "Status is required."),
       title: (value) => {
         const trimmed = value.trim();
 
