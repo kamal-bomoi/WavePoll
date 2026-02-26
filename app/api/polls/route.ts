@@ -66,7 +66,7 @@ export const POST = route<CreatePollPayload>(
 
     await Promise.all([
       emit_poll_updated(next_poll),
-      env.NODE_ENV === "production"
+      env.NODE_ENV === "production" && next_poll.status === "live"
         ? schedule_poll_end(next_poll)
         : Promise.resolve()
     ]);

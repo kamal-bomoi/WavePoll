@@ -7,6 +7,7 @@ import { env } from "@/env";
 import { db } from "@/lib/db/client";
 import type { PollType } from "@/lib/db/schema";
 import { options, poll_status, poll_type, polls } from "@/lib/db/schema";
+import { schedule_poll_end } from "@/lib/qstash";
 import { emit_poll_updated } from "@/lib/realtime";
 import { s3 } from "@/lib/s3";
 import { assert_owner } from "@/lib/session";
@@ -142,7 +143,14 @@ export const PUT = route<
 
     const next_poll = await get_poll(poll.id);
 
-    await emit_poll_updated(next_poll);
+    const has_gone_live = poll.status === "draft" && body.status === "live";
+
+    await Promise.all([
+      emit_poll_updated(next_poll),
+      env.NODE_ENV === "production" && has_gone_live
+        ? schedule_poll_end(next_poll)
+        : Promise.resolve()
+    ]);
 
     return next_poll;
   },
