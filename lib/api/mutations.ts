@@ -15,10 +15,13 @@ export type MutationVariables<T extends MutationKey> = Parameters<
   Mutation[T]
 >[0];
 
+type PollMutationPayload = Omit<CreatePollPayload, "owner_email"> & {
+  owner_email?: string | null;
+  image_files?: (File | null)[];
+};
+
 export const mutations = {
-  "create poll": async (
-    payload: CreatePollPayload & { image_files?: (File | null)[] }
-  ): Promise<Poll> => {
+  "create poll": async (payload: PollMutationPayload): Promise<Poll> => {
     const { image_files, ...poll_payload } = payload;
 
     if (poll_payload.type !== "image") return api.post("/polls", poll_payload);
@@ -34,7 +37,7 @@ export const mutations = {
       return await api.post("/polls", {
         ...poll_payload,
         options: keys
-      } satisfies CreatePollPayload);
+      });
     } catch (e) {
       await api.delete("/polls/images", { data: { keys } }).catch(noop);
 
@@ -42,11 +45,59 @@ export const mutations = {
     }
   },
 
-  "publish poll": ({ poll_id }: { poll_id: string }): Promise<Poll> =>
-    api.patch(`/polls/${poll_id}`, { status: "live" }),
+  "update poll": async ({
+    poll_id,
+    payload
+  }: {
+    poll_id: string;
+    payload: PollMutationPayload;
+  }): Promise<Poll> => {
+    const { image_files, ...poll_payload } = payload;
 
-  "unpublish poll": ({ poll_id }: { poll_id: string }): Promise<Poll> =>
-    api.patch(`/polls/${poll_id}`, { status: "draft" }),
+    if (poll_payload.type !== "image")
+      return api.put(`/polls/${poll_id}`, {
+        ...poll_payload,
+        owner_email: poll_payload.owner_email || undefined
+      });
+
+    const files = image_files ?? [];
+
+    const options = [...(poll_payload.options ?? [])];
+
+    const selected_indices = files
+      .map((file, index) => ({ file, index }))
+      .filter((entry): entry is { file: File; index: number } => !!entry.file);
+
+    if (!selected_indices.length)
+      return api.put(`/polls/${poll_id}`, {
+        ...poll_payload,
+        options,
+        owner_email: poll_payload.owner_email || undefined
+      });
+
+    const { keys } = await upload({
+      files: selected_indices.map((entry) => entry.file),
+      prepare: (files_info) =>
+        api.post<UploadUrl[]>("/polls/upload-urls", { files: files_info }),
+      cleanup: (keys) => api.delete("/polls/images", { data: { keys } })
+    });
+
+    selected_indices.forEach((entry, i) => {
+      options[entry.index] = keys[i] ?? options[entry.index] ?? "";
+    });
+
+    try {
+      return await api.put(`/polls/${poll_id}`, {
+        ...poll_payload,
+        options,
+        owner_email: poll_payload.owner_email || undefined
+      });
+    } catch (e) {
+      await api.delete("/polls/images", { data: { keys } }).catch(noop);
+
+      throw e;
+    }
+  },
 
   "delete poll": ({ poll_id }: { poll_id: string }): Promise<undefined> =>
     api.delete(`/polls/${poll_id}`, { data: {} }),

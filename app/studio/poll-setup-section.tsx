@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 import type { StudioForm } from "@/app/studio/page";
 import type { PollStatus, PollType } from "@/lib/db/schema";
 import { MAX_OPTIONS } from "@/utils/constants";
+import { ImageOptionPreview } from "./image-option-preview";
 
 const poll_type_options: { label: string; value: PollType }[] = [
   { label: "Single", value: "single" },
@@ -45,7 +46,10 @@ export function PollSetupSection({
   image_files,
   on_change_image_file,
   on_add_image_option,
-  on_remove_image_option
+  on_remove_image_option,
+  image_option_keys = [],
+  show_owner_email = true,
+  show_status = true
 }: {
   form: StudioForm;
   on_type_change: (next_type: PollType) => void;
@@ -53,6 +57,9 @@ export function PollSetupSection({
   on_change_image_file: (index: number, file: File | null) => void;
   on_add_image_option: () => void;
   on_remove_image_option: (index: number) => void;
+  image_option_keys?: string[];
+  show_owner_email?: boolean;
+  show_status?: boolean;
 }) {
   const can_add_option = (form.values.options?.length ?? 0) < MAX_OPTIONS;
 
@@ -66,28 +73,34 @@ export function PollSetupSection({
         maxRows={6}
         {...form.getInputProps("description")}
       />
-      <TextInput
-        label="Notification email (optional)"
-        placeholder="you@example.com"
-        type="email"
-        leftSection={<IconMail size={16} />}
-        {...form.getInputProps("owner_email")}
-      />
-      <Text size="xs" c="dimmed" mt={-6}>
-        If provided, we will send a summary email when this poll ends.
-      </Text>
+      {show_owner_email && (
+        <>
+          <TextInput
+            label="Notification email (optional)"
+            placeholder="you@example.com"
+            type="email"
+            leftSection={<IconMail size={16} />}
+            {...form.getInputProps("owner_email")}
+          />
+          <Text size="xs" c="dimmed" mt={-6}>
+            If provided, we will send a summary email when this poll ends.
+          </Text>
+        </>
+      )}
       <SegmentedControl
         fullWidth
         data={poll_type_options}
         value={form.values.type}
         onChange={(value) => on_type_change(value as PollType)}
       />
-      <Select
-        label="Status"
-        required
-        data={poll_status_options}
-        {...form.getInputProps("status")}
-      />
+      {show_status && (
+        <Select
+          label="Status"
+          required
+          data={poll_status_options}
+          {...form.getInputProps("status")}
+        />
+      )}
 
       {(form.values.type === "single" || form.values.type === "image") && (
         <Stack gap={10}>
@@ -112,37 +125,63 @@ export function PollSetupSection({
               <IconPlus size={16} />
             </ActionIcon>
           </Group>
-          {form.values.options?.map((_, index) => (
-            <Group key={`option-${index}`} wrap="nowrap" align="end">
-              {form.values.type === "image" ? (
-                <FileInput
-                  style={{ flex: 1 }}
-                  accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-                  placeholder={`Upload image ${index + 1}`}
-                  value={image_files[index] ?? null}
-                  onChange={(file) => on_change_image_file(index, file)}
-                />
-              ) : (
+
+          {form.values.type === "image" ? (
+            <Group wrap="nowrap" align="stretch" style={{ overflowX: "auto" }}>
+              {form.values.options?.map((_, index) => (
+                <Card
+                  key={`option-${index}`}
+                  withBorder
+                  radius="md"
+                  p="sm"
+                  style={{ minWidth: 260, maxWidth: 260 }}
+                >
+                  <Stack gap="sm">
+                    <ImageOptionPreview
+                      file={image_files[index] ?? null}
+                      image_key={image_option_keys[index]}
+                      alt={`Image option ${index + 1}`}
+                    />
+
+                    <FileInput
+                      accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                      placeholder={`Upload image ${index + 1}`}
+                      value={image_files[index] ?? null}
+                      onChange={(file) => on_change_image_file(index, file)}
+                    />
+
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      disabled={form.values.options!.length < 3}
+                      onClick={() => on_remove_image_option(index)}
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Stack>
+                </Card>
+              ))}
+            </Group>
+          ) : (
+            form.values.options?.map((_, index) => (
+              <Group key={`option-${index}`} wrap="nowrap" align="end">
                 <TextInput
                   style={{ flex: 1 }}
                   placeholder={`Option ${index + 1}`}
                   {...form.getInputProps(`options.${index}`)}
                 />
-              )}
-              <ActionIcon
-                variant="subtle"
-                color="red"
-                disabled={form.values.options!.length < 3}
-                onClick={
-                  form.values.type === "image"
-                    ? () => on_remove_image_option(index)
-                    : () => form.removeListItem("options", index)
-                }
-              >
-                <IconTrash size={16} />
-              </ActionIcon>
-            </Group>
-          ))}
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  disabled={form.values.options!.length < 3}
+                  onClick={() => form.removeListItem("options", index)}
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+            ))
+          )}
+
           {!!form.errors.options && (
             <Text c="red" size="sm">
               {form.errors.options}

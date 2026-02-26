@@ -14,8 +14,7 @@ import { SharePollButton } from "@/app/studio/share-poll-button";
 import type { Poll } from "@/types";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { DeletePollButton } from "./delete-poll-button";
-import { PublishPollButton } from "./publish-poll-button";
-import { UnpublishPollButton } from "./unpublish-poll-button";
+import { EditPollButton } from "./edit-poll-button";
 
 export function UserPollCard({ poll }: { poll: Poll }) {
   const has_ended = is_poll_ended(poll);
@@ -47,13 +46,7 @@ export function UserPollCard({ poll }: { poll: Poll }) {
 
         <Flex gap={8} align="center" wrap="wrap">
           <Group gap={8} wrap="wrap">
-            {poll.status === "draft" && !has_ended && (
-              <PublishPollButton poll={poll} />
-            )}
-
-            {poll.status === "live" && !has_ended && (
-              <UnpublishPollButton poll={poll} />
-            )}
+            {poll.status === "draft" && <EditPollButton poll_id={poll.id} />}
 
             <DeletePollButton poll={poll} />
           </Group>

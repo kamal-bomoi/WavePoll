@@ -1,15 +1,17 @@
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import * as Sentry from "@sentry/nextjs";
+import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import z from "zod";
 import { env } from "@/env";
 import { db } from "@/lib/db/client";
-import type { PollStatus } from "@/lib/db/schema";
-import { polls } from "@/lib/db/schema";
+import type { PollType } from "@/lib/db/schema";
+import { options, poll_status, poll_type, polls } from "@/lib/db/schema";
 import { emit_poll_updated } from "@/lib/realtime";
 import { s3 } from "@/lib/s3";
 import { assert_owner } from "@/lib/session";
-import { is_poll_ended } from "@/utils/poll-generic";
+import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
+import { nanoid } from "@/utils/nanoid";
 import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
@@ -27,10 +29,29 @@ export const GET = route<undefined, { poll_id: string }>(
   }
 );
 
-export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
+export const PUT = route<
+  {
+    owner_email?: string | null;
+    title: string;
+    status: "draft" | "live";
+    description: string | null;
+    type: PollType;
+    end_at: string;
+    reaction_emojis: string[] | null;
+    options: string[] | null;
+  },
+  { poll_id: string }
+>(
   async ({ params, body }) => {
     const poll = await db.query.polls.findFirst({
-      columns: { id: true, owner_id: true, status: true, end_at: true },
+      columns: { id: true, owner_id: true, status: true, type: true },
+      with: {
+        options: {
+          columns: {
+            value: true
+          }
+        }
+      },
       where: eq(polls.id, params.poll_id)
     });
 
@@ -38,23 +59,76 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
 
     await assert_owner(poll.owner_id);
 
-    if (poll.status === body.status)
-      throw WavePollError.BadRequest(`Poll is already in ${body.status} mode.`);
+    if (poll.status !== "draft")
+      throw WavePollError.BadRequest("Only draft polls can be edited.");
 
-    const has_ended = is_poll_ended(poll);
+    const image_prefix = `options/${poll.owner_id}/`;
 
-    if (body.status === "live" && has_ended)
-      throw WavePollError.BadRequest(
-        "Cannot publish a poll with an end time in the past."
+    if (
+      body.type === "image" &&
+      (body.options ?? []).some(
+        (key) =>
+          !key.startsWith(image_prefix) || key.length <= image_prefix.length
+      )
+    )
+      throw WavePollError.Unauthorized(
+        "One or more image options are not owned by this session."
       );
 
-    if (body.status === "draft" && has_ended)
-      throw WavePollError.BadRequest("Cannot unpublish a poll that has ended.");
+    const old_image_keys =
+      poll.type === "image" ? poll.options.map((option) => option.value) : [];
+    const next_image_keys = body.type === "image" ? (body.options ?? []) : [];
+    const image_keys_to_delete = old_image_keys.filter(
+      (key) => !next_image_keys.includes(key)
+    );
 
-    await db
-      .update(polls)
-      .set({ status: body.status })
-      .where(eq(polls.id, poll.id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(polls)
+        .set({
+          title: body.title.trim(),
+          status: body.status,
+          description: body.description,
+          type: body.type,
+          end_at: new Date(body.end_at),
+          reaction_emojis: body.reaction_emojis,
+          ...(body.owner_email !== undefined && {
+            owner_email: body.owner_email
+          })
+        })
+        .where(eq(polls.id, poll.id));
+
+      await tx.delete(options).where(eq(options.poll_id, poll.id));
+
+      if (
+        (body.type === "single" || body.type === "image") &&
+        body.options?.length
+      )
+        await tx.insert(options).values(
+          body.options.map((value) => ({
+            id: nanoid.id(),
+            poll_id: poll.id,
+            value
+          }))
+        );
+    });
+
+    if (image_keys_to_delete.length)
+      await s3
+        .send(
+          new DeleteObjectsCommand({
+            Bucket: env.S3_BUCKET,
+            Delete: {
+              Objects: image_keys_to_delete.map((key) => ({ Key: key })),
+              Quiet: true
+            }
+          })
+        )
+        .catch((error) => {
+          if (env.NODE_ENV === "development") console.error(error);
+
+          Sentry.captureException(error);
+        });
 
     const next_poll = await get_poll(poll.id);
 
@@ -67,9 +141,42 @@ export const PATCH = route<{ status: PollStatus }, { poll_id: string }>(
       params: z.object({
         poll_id: z.string()
       }),
-      body: z.object({
-        status: z.enum(["draft", "live"])
-      })
+      body: z
+        .object({
+          owner_email: z.email().nullable().optional(),
+          title: z.string(),
+          status: z.enum(poll_status.enumValues),
+          description: z.string().nullable(),
+          type: z.enum(poll_type.enumValues),
+          reaction_emojis: z.array(z.string()).min(1).nullable(),
+          end_at: z.iso.datetime(),
+          options: z
+            .array(z.string())
+            .min(MIN_OPTIONS)
+            .max(MAX_OPTIONS)
+            .nullable()
+        })
+        .superRefine((body, ctx) => {
+          const end_at = dayjs(body.end_at);
+          const min_time = dayjs().add(5, "minute");
+
+          if (!end_at.isValid() || end_at.isBefore(min_time))
+            ctx.addIssue({
+              code: "custom",
+              path: ["end_at"],
+              message: "End time must be at least 5 minutes from now."
+            });
+
+          if (
+            (body.type === "single" || body.type === "image") &&
+            !body.options
+          )
+            ctx.addIssue({
+              code: "custom",
+              path: ["options"],
+              message: "Options are required for single choice and image polls."
+            });
+        })
     }
   }
 );

@@ -68,14 +68,6 @@ export interface ErrorProps {
 
 export type ApiError = AxiosError<{ errors: ErrorProps[] }>;
 
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
-
-export type Fn = (...args: any[]) => any;
-
-export type Nullish<T> = T | null | undefined;
-
 export interface UploadUrlsPayload {
   files: {
     content_type: string;
@@ -87,6 +79,14 @@ export interface UploadUrl {
   key: string;
   url: string;
 }
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type Fn = (...args: any[]) => any;
+
+export type Nullish<T> = T | null | undefined;
 
 export type Nullishify<T> = {
   [K in keyof T]: null extends T[K] ? T[K] | undefined : T[K];

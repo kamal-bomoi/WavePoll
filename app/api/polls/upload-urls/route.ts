@@ -9,7 +9,6 @@ import {
   ALLOWED_CONTENT_TYPES,
   MAX_FILE_SIZE,
   MAX_OPTIONS,
-  MIN_OPTIONS,
   SIGNED_URL_EXPIRY_SECONDS
 } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
@@ -58,7 +57,7 @@ export const POST = route<UploadUrlsPayload>(
               })
             })
           )
-          .min(MIN_OPTIONS)
+          .min(1)
           .max(MAX_OPTIONS)
       })
     }
