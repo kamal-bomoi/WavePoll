@@ -3,6 +3,7 @@ import { redis } from "@/lib/redis";
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
+
   if (!secret) return new NextResponse("Server misconfigured", { status: 500 });
 
   const authorization = req.headers.get("authorization");

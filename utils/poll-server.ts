@@ -26,7 +26,7 @@ export async function get_polls(poll_ids: string[]): Promise<Poll[]> {
     .where(inArray(polls_details.id, poll_ids))
     .orderBy(desc(polls_details.created_at));
 
-  return rows.map(map_poll);
+  return rows.map((row) => map_poll(row));
 }
 
 export async function get_owner_polls(owner_id: string): Promise<Poll[]> {
@@ -36,14 +36,18 @@ export async function get_owner_polls(owner_id: string): Promise<Poll[]> {
     .where(eq(polls_details.owner_id, owner_id))
     .orderBy(desc(polls_details.created_at));
 
-  return rows.map(map_poll);
+  return rows.map((row) => map_poll(row, { include_owner_email: true }));
 }
 
-function map_poll(row: PollDetail): Poll {
-  const { owner_id: _owner_id, owner_email: _owner_email, ...poll } = row;
+function map_poll(
+  row: PollDetail,
+  options: { include_owner_email?: boolean } = {}
+): Poll {
+  const { owner_id: _owner_id, owner_email, ...poll } = row;
 
   return {
     ...poll,
+    ...(options.include_owner_email ? { owner_email } : {}),
     presence: 0,
     options: poll.options.map((option) => ({
       id: option.id,

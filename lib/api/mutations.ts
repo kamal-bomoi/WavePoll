@@ -57,7 +57,7 @@ export const mutations = {
     if (poll_payload.type !== "image")
       return api.put(`/polls/${poll_id}`, {
         ...poll_payload,
-        owner_email: poll_payload.owner_email || undefined
+        owner_email: poll_payload.owner_email
       });
 
     const files = image_files ?? [];
@@ -72,7 +72,7 @@ export const mutations = {
       return api.put(`/polls/${poll_id}`, {
         ...poll_payload,
         options,
-        owner_email: poll_payload.owner_email || undefined
+        owner_email: poll_payload.owner_email
       });
 
     const { keys } = await upload({
@@ -90,7 +90,7 @@ export const mutations = {
       return await api.put(`/polls/${poll_id}`, {
         ...poll_payload,
         options,
-        owner_email: poll_payload.owner_email || undefined
+        owner_email: poll_payload.owner_email
       });
     } catch (e) {
       await api.delete("/polls/images", { data: { keys } }).catch(noop);

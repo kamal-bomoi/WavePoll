@@ -18,6 +18,7 @@ export interface Timestamps {
 export type Poll = Merge<
   Omit<PollDetail, "owner_id" | "owner_email">,
   {
+    owner_email?: PollDetail["owner_email"];
     presence: number;
     options: Option[];
   }

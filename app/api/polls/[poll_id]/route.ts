@@ -12,6 +12,7 @@ import { s3 } from "@/lib/s3";
 import { assert_owner } from "@/lib/session";
 import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
+import { is_poll_ended } from "@/utils/poll-generic";
 import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
@@ -44,7 +45,13 @@ export const PUT = route<
 >(
   async ({ params, body }) => {
     const poll = await db.query.polls.findFirst({
-      columns: { id: true, owner_id: true, status: true, type: true },
+      columns: {
+        id: true,
+        owner_id: true,
+        status: true,
+        type: true,
+        end_at: true
+      },
       with: {
         options: {
           columns: {
@@ -58,6 +65,9 @@ export const PUT = route<
     if (!poll) throw WavePollError.NotFound("Poll does not exist.");
 
     await assert_owner(poll.owner_id);
+
+    if (is_poll_ended({ end_at: poll.end_at }))
+      throw WavePollError.BadRequest("This poll has already ended.");
 
     if (poll.status !== "draft")
       throw WavePollError.BadRequest("Only draft polls can be edited.");

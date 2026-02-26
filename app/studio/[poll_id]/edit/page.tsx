@@ -11,9 +11,9 @@ export default function EditPollPage() {
   const params = useParams<{ poll_id: string }>();
   const poll_query = usePollQuery(params.poll_id);
   const owner_polls_query = useQuery("polls");
-
-  const is_owner_view =
-    owner_polls_query.data?.some((poll) => poll.id === params.poll_id) ?? false;
+  const owner_poll = owner_polls_query.data?.find(
+    (poll) => poll.id === params.poll_id
+  );
 
   if (poll_query.isLoading || owner_polls_query.isLoading)
     return (
@@ -24,10 +24,17 @@ export default function EditPollPage() {
       </Center>
     );
 
-  if (poll_query.error)
+  if (poll_query.error || owner_polls_query.error)
     return (
       <Container size="md" className="wave-page">
-        <WaveAlert type="error" message={poll_query.error} />
+        <WaveAlert
+          type="error"
+          message={
+            owner_polls_query.error ??
+            poll_query.error ??
+            "An unexpected error occurred."
+          }
+        />
       </Container>
     );
 
@@ -36,7 +43,11 @@ export default function EditPollPage() {
   return (
     <div className="wave-page">
       <Container size="lg">
-        <EditPollView poll={poll_query.data} is_owner_view={is_owner_view} />
+        <EditPollView
+          poll={poll_query.data}
+          is_owner_view={!!owner_poll}
+          initial_owner_email={owner_poll?.owner_email ?? null}
+        />
       </Container>
     </div>
   );

@@ -46,7 +46,9 @@ export function UserPollCard({ poll }: { poll: Poll }) {
 
         <Flex gap={8} align="center" wrap="wrap">
           <Group gap={8} wrap="wrap">
-            {poll.status === "draft" && <EditPollButton poll_id={poll.id} />}
+            {poll.status === "draft" && !has_ended && (
+              <EditPollButton poll_id={poll.id} />
+            )}
 
             <DeletePollButton poll={poll} />
           </Group>
