@@ -79,8 +79,15 @@ export const POST = route<CreatePollPayload>(
       body: z
         .object({
           owner_email: z.email().nullable(),
-          title: z.string().trim().min(3),
-          description: z.string().nullable(),
+          title: z
+            .string()
+            .trim()
+            .min(3, "Title must be at least 3 characters long.")
+            .max(80, "Title must be at most 80 characters long."),
+          description: z
+            .string()
+            .max(300, "Description must be at most 300 characters long.")
+            .nullable(),
           type: z.enum(poll_type.enumValues),
           status: z.enum(poll_status.enumValues),
           reaction_emojis: z.array(z.string()).min(1).nullable(),

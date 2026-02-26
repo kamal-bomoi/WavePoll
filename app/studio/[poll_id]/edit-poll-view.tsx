@@ -193,7 +193,7 @@ export function EditPollView({
     return (
       <WaveAlert
         type="error"
-        message="Only the poll owner can edit this draft."
+        message="Only the poll owner can edit this poll."
       />
     );
 

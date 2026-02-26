@@ -168,9 +168,16 @@ export const PUT = route<
       body: z
         .object({
           owner_email: z.email().nullable().optional(),
-          title: z.string().trim().min(3),
+          title: z
+            .string()
+            .trim()
+            .min(3, "Title must be at least 3 characters long.")
+            .max(80, "Title must be at most 80 characters long."),
           status: z.enum(poll_status.enumValues),
-          description: z.string().nullable(),
+          description: z
+            .string()
+            .max(300, "Description must be at most 300 characters long.")
+            .nullable(),
           type: z.enum(poll_type.enumValues),
           reaction_emojis: z.array(z.string()).min(1).nullable(),
           end_at: z.iso.datetime(),

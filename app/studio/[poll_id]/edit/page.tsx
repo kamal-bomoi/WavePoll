@@ -15,7 +15,7 @@ export default function EditPollPage() {
     (poll) => poll.id === params.poll_id
   );
 
-  if (poll_query.isLoading)
+  if (poll_query.isLoading || owner_polls_query.isLoading)
     return (
       <Center className="wave-page">
         <Stack align="center" gap="sm">

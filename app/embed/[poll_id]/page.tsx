@@ -75,7 +75,7 @@ export default function EmbedPollPage() {
         </Group>
         <Title order={4}>{poll.title}</Title>
         {!!poll.description && (
-          <Text c="dimmed" size="sm">
+          <Text c="dimmed" size="sm" lineClamp={3}>
             {poll.description}
           </Text>
         )}
