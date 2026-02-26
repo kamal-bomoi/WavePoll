@@ -15,11 +15,11 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: {
-    default: "WavePoll - Realtime polls without signup",
+    default: "WavePoll",
     template: "%s | WavePoll"
   },
   description:
-    "Create, share, and track realtime polls with no account required."
+    "Create, share, track, and embed realtime polls. No signup needed."
 };
 
 export default function RootLayout({

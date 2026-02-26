@@ -1,7 +1,7 @@
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import * as Sentry from "@sentry/nextjs";
 import dayjs from "dayjs";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import z from "zod";
 import { env } from "@/env";
 import { db } from "@/lib/db/client";
@@ -94,7 +94,7 @@ export const PUT = route<
     );
 
     await db.transaction(async (tx) => {
-      await tx
+      const updated = await tx
         .update(polls)
         .set({
           title: body.title.trim(),
@@ -107,7 +107,13 @@ export const PUT = route<
             owner_email: body.owner_email
           })
         })
-        .where(eq(polls.id, poll.id));
+        .where(and(eq(polls.id, poll.id), eq(polls.status, "draft")))
+        .returning({ id: polls.id });
+
+      if (!updated.length)
+        throw WavePollError.Conflict(
+          "Only draft polls can be edited. Refresh and try again."
+        );
 
       await tx.delete(options).where(eq(options.poll_id, poll.id));
 
@@ -162,7 +168,7 @@ export const PUT = route<
       body: z
         .object({
           owner_email: z.email().nullable().optional(),
-          title: z.string(),
+          title: z.string().trim().min(3),
           status: z.enum(poll_status.enumValues),
           description: z.string().nullable(),
           type: z.enum(poll_type.enumValues),

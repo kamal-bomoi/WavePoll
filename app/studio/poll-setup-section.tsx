@@ -62,6 +62,7 @@ export function PollSetupSection({
   show_status?: boolean;
 }) {
   const can_add_option = (form.values.options?.length ?? 0) < MAX_OPTIONS;
+  const option_count = form.values.options?.length ?? 0;
 
   return (
     <Stack gap="md">
@@ -106,7 +107,8 @@ export function PollSetupSection({
         <Stack gap={10}>
           <Group justify="space-between">
             <Text fw={600} size="sm">
-              {form.values.type === "image" ? "Image options" : "Options"}
+              {form.values.type === "image" ? "Image options" : "Options"} (
+              {option_count}/{MAX_OPTIONS})
             </Text>
             <ActionIcon
               variant="light"

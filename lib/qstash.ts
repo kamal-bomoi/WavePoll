@@ -32,7 +32,8 @@ export async function schedule_poll_end(poll: Poll): Promise<void> {
         poll_id: poll.id
       },
       notBefore: not_before,
-      deduplicationId: `poll-ended:${poll.id}`
+      deduplicationId: `poll-ended:${poll.id}`,
+      retryDelay: "min(300000, pow(2, retried) * 15000)"
     });
   } catch (error) {
     Sentry.captureException(error, {

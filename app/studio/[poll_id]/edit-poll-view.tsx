@@ -56,16 +56,6 @@ export function EditPollView({
           : null
     },
     validate: {
-      type: (value) => (value ? null : "Poll type is required."),
-      title: (value) => {
-        const trimmed = value.trim();
-
-        if (!trimmed) return "Title is required.";
-
-        if (trimmed.length < 3) return "Title must be at least 3 characters.";
-
-        return null;
-      },
       options: (value, values) => {
         if (values.type === "image") {
           const count = (value ?? []).reduce((acc, _entry, index) => {
@@ -154,10 +144,11 @@ export function EditPollView({
         ? values.reaction_emojis
         : null;
 
-    const image_options = image_option_keys.filter(
-      (key) => key.trim().length > 0
-    );
     const owner_email = values.owner_email?.trim() ?? "";
+    const normalized_image_options = image_option_keys.map((key) => key.trim());
+    const normalized_single_options = (values.options ?? [])
+      .map((option) => option.trim())
+      .filter((option) => option.length > 0);
 
     mutation.mutate(
       {
@@ -170,13 +161,13 @@ export function EditPollView({
           end_at: new Date(values.end_at).toISOString(),
           owner_email: owner_email.length > 0 ? owner_email : null,
           reaction_emojis,
+          image_files,
           options:
-            values.type === "single" || values.type === "image"
-              ? values.type === "image"
-                ? image_options
-                : values.options
-              : null,
-          image_files
+            values.type === "image"
+              ? normalized_image_options
+              : values.type === "single"
+                ? normalized_single_options
+                : null
         }
       },
       {

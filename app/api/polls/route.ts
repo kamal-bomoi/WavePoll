@@ -79,7 +79,7 @@ export const POST = route<CreatePollPayload>(
       body: z
         .object({
           owner_email: z.email().nullable(),
-          title: z.string(),
+          title: z.string().trim().min(3),
           description: z.string().nullable(),
           type: z.enum(poll_type.enumValues),
           status: z.enum(poll_status.enumValues),
@@ -122,7 +122,7 @@ export const GET = route<
   { ids?: string | undefined }
 >(
   async ({ query }) => {
-    if (query.ids) return get_polls(query.ids.split(","));
+    if (query.ids) return get_polls(query.ids.split(",").filter(Boolean));
 
     const anon_id = await get_or_set_anon_id();
 

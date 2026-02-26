@@ -124,7 +124,7 @@ export function PollResultContent({
         )}
       </SimpleGrid>
 
-      {!!poll.reaction_emojis?.length && (
+      {!!poll.reaction_emojis?.length && !!poll.reaction_breakdown.length && (
         <Stack gap={8}>
           <Text size="sm" fw={600}>
             Reaction breakdown

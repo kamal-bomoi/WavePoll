@@ -48,6 +48,8 @@ export function usePollPresence(poll_id: string | undefined): void {
   }, [poll_id]);
 }
 
+let memory_viewer_id: string | undefined;
+
 function get_or_create_viewer_id(): string {
   try {
     const existing = window.localStorage.getItem(VIEWER_ID_KEY);
@@ -59,7 +61,9 @@ function get_or_create_viewer_id(): string {
 
     return value;
   } catch {
-    return nanoid();
+    if (!memory_viewer_id) memory_viewer_id = nanoid();
+
+    return memory_viewer_id;
   }
 }
 

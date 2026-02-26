@@ -15,7 +15,7 @@ export default function EditPollPage() {
     (poll) => poll.id === params.poll_id
   );
 
-  if (poll_query.isLoading || owner_polls_query.isLoading)
+  if (poll_query.isLoading)
     return (
       <Center className="wave-page">
         <Stack align="center" gap="sm">
@@ -24,17 +24,10 @@ export default function EditPollPage() {
       </Center>
     );
 
-  if (poll_query.error || owner_polls_query.error)
+  if (poll_query.error)
     return (
       <Container size="md" className="wave-page">
-        <WaveAlert
-          type="error"
-          message={
-            owner_polls_query.error ??
-            poll_query.error ??
-            "An unexpected error occurred."
-          }
-        />
+        <WaveAlert type="error" message={poll_query.error} />
       </Container>
     );
 

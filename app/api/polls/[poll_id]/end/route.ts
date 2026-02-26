@@ -29,7 +29,11 @@ async function handler(
 
     if (!poll) return Response.json({ ok: true });
 
-    if (!is_poll_ended(poll)) return Response.json({ ok: true });
+    if (!is_poll_ended(poll))
+      return Response.json(
+        { errors: [{ message: "Poll has not ended yet." }] },
+        { status: 425 }
+      );
 
     const lock_key = `poll:ended:emitted:${poll.id}`;
     const created = await redis.set(lock_key, "1", {

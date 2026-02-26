@@ -40,17 +40,6 @@ export default function StudioPage() {
       reaction_emojis: null
     },
     validate: {
-      type: (value) => (value ? null : "Poll type is required."),
-      status: (value) => (value ? null : "Status is required."),
-      title: (value) => {
-        const trimmed = value.trim();
-
-        if (!trimmed) return "Title is required.";
-
-        if (trimmed.length < 3) return "Title must be at least 3 characters.";
-
-        return null;
-      },
       options: (value, values) => {
         if (values.type !== "single" && values.type !== "image") return null;
 
@@ -64,9 +53,32 @@ export default function StudioPage() {
   });
 
   function on_type_change(next_type: PollType) {
+    const current_type = form.values.type;
+
     form.setFieldValue("type", next_type);
 
-    if (next_type !== "image") return;
+    if (next_type === "single") {
+      const current =
+        current_type === "single" ? (form.values.options ?? []) : [];
+
+      form.setFieldValue(
+        "options",
+        current.length >= MIN_OPTIONS
+          ? current
+          : Array.from({ length: MIN_OPTIONS }, () => "")
+      );
+
+      set_image_files([null, null]);
+
+      return;
+    }
+
+    if (next_type !== "image") {
+      form.setFieldValue("options", null);
+      set_image_files([null, null]);
+
+      return;
+    }
 
     if ((form.values.options?.length ?? 0) < MIN_OPTIONS)
       form.setFieldValue(
