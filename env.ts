@@ -23,7 +23,7 @@ export const env = createEnv({
     QSTASH_CURRENT_SIGNING_KEY: z.string().optional(),
     QSTASH_NEXT_SIGNING_KEY: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
-    EMAIL_FROM: z.email().optional(),
+    EMAIL_FROM: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
     SENTRY_PROJECT: z.string().optional(),
     S3_ENDPOINT: z.string(),
