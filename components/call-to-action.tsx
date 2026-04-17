@@ -7,15 +7,7 @@ import Link from "next/link";
 export function CallToAction() {
   return (
     <section>
-      <Paper
-        withBorder
-        radius="xl"
-        p="xl"
-        style={{
-          background:
-            "linear-gradient(160deg, var(--mantine-color-slate-0) 0%, var(--mantine-color-indigo-0) 100%)"
-        }}
-      >
+      <Paper withBorder radius="xl" p="xl" shadow="sm">
         <Stack gap="md" align="center">
           <Title order={2} ta="center">
             Start building your next poll now

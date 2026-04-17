@@ -7,7 +7,7 @@ import { styles } from "./styles";
 export const theme = createTheme({
   fontFamily: "Manrope, sans-serif",
   primaryColor: "indigo",
-  defaultRadius: "md",
+  defaultRadius: "lg",
   components: styles,
   colors
 });

@@ -43,7 +43,7 @@ The setup order below is crucial **only the first time you set up the project**.
 Run this first:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This starts:

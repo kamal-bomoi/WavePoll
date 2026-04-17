@@ -1,5 +1,5 @@
 import type { MantineThemeComponents } from "@mantine/core";
-import { Badge, Button, InputWrapper, Paper } from "@mantine/core";
+import { Badge, Button, Card, InputWrapper, Paper } from "@mantine/core";
 
 export const styles: MantineThemeComponents = {
   Paper: Paper.extend({
@@ -8,17 +8,31 @@ export const styles: MantineThemeComponents = {
       withBorder: true,
       radius: "lg"
     },
-    styles: {
+    styles: (theme) => ({
       root: {
-        borderColor: "rgba(13, 148, 136, 0.2)",
-        background: "rgba(255, 255, 255, 0.82)",
-        backdropFilter: "blur(6px)"
+        borderColor: theme.colors.slate?.[2] ?? theme.colors.gray[2],
+        backgroundColor: theme.white,
+        boxShadow: "0 14px 44px rgba(15, 23, 42, 0.08)"
       }
-    }
+    })
+  }),
+  Card: Card.extend({
+    defaultProps: {
+      withBorder: true,
+      radius: "lg",
+      p: "lg"
+    },
+    styles: (theme) => ({
+      root: {
+        borderColor: theme.colors.slate?.[2] ?? theme.colors.gray[2],
+        backgroundColor: theme.white,
+        boxShadow: "0 12px 36px rgba(15, 23, 42, 0.06)"
+      }
+    })
   }),
   Button: Button.extend({
     defaultProps: {
-      radius: "xl"
+      radius: "md"
     }
   }),
   Badge: Badge.extend({
