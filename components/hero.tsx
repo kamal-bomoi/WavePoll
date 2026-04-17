@@ -10,15 +10,7 @@ export function Hero() {
   //   : "/studio";
 
   return (
-    <Paper
-      withBorder
-      radius="xl"
-      p={{ base: "lg", md: "xl" }}
-      style={{
-        background:
-          "linear-gradient(155deg, var(--mantine-color-indigo-0) 0%, var(--mantine-color-blue-0) 52%, var(--mantine-color-slate-0) 100%)"
-      }}
-    >
+    <Paper withBorder radius="xl" p={{ base: "lg", md: "xl" }} shadow="sm">
       <Grid gutter="xl" align="center">
         <Grid.Col span={{ base: 12, md: 12 }}>
           <Stack gap="md">

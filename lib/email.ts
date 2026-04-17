@@ -148,7 +148,7 @@ function build_rich_html({
     <style>
       body { margin: 0; padding: 0; background: #f7f7ff; font-family: Inter, Segoe UI, Arial, sans-serif; color: #0f172a; }
       .container { max-width: 620px; margin: 24px auto; background: #ffffff; border: 1px solid #e7e7ff; border-radius: 18px; overflow: hidden; }
-      .hero { padding: 28px 24px; background: linear-gradient(145deg, #eef2ff 0%, #f5f3ff 65%, #f7f7ff 100%); border-bottom: 1px solid #e8eaff; }
+      .hero { padding: 28px 24px; background: #eef2ff; border-bottom: 1px solid #e8eaff; }
       .brand { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #4f46e514; color: #4f46e5; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; }
       h1 { margin: 12px 0 8px; font-size: 24px; line-height: 1.25; color: #111827; }
       p { margin: 0; color: #475569; }
