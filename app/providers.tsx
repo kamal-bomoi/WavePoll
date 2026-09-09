@@ -1,7 +1,7 @@
 "use client";
 
 import { ProgressProvider } from "@bprogress/next/app";
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, v8CssVariablesResolver } from "@mantine/core";
 import { useMounted } from "@mantine/hooks";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -22,7 +22,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={client}>
-      <MantineProvider theme={theme}>
+      <MantineProvider
+        theme={theme}
+        cssVariablesResolver={v8CssVariablesResolver}
+      >
         <ProgressProvider
           height="3px"
           color="var(--mantine-primary-color-filled)"

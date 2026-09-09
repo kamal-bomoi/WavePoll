@@ -1,4 +1,4 @@
-import { isServer } from "@tanstack/react-query";
+import { environmentManager } from "@tanstack/react-query";
 import axios, { type AxiosInstance } from "axios";
 import { toast } from "sonner";
 import type { ApiError } from "@/types";
@@ -39,7 +39,7 @@ class Api {
 
   #interceptors(): void {
     this.#client.interceptors.response.use(undefined, (error: ApiError) => {
-      if (isServer) return Promise.reject(error);
+      if (environmentManager.isServer()) return Promise.reject(error);
 
       const should_toast =
         typeof error.config?.meta?.toast === "function"

@@ -1,6 +1,6 @@
 import {
   defaultShouldDehydrateQuery,
-  isServer,
+  environmentManager,
   MutationCache,
   QueryClient
 } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 let browser_query_client: QueryClient | undefined;
 
 export function query_client(): QueryClient {
-  if (isServer) return create_client();
+  if (environmentManager.isServer()) return create_client();
 
   if (!browser_query_client) browser_query_client = create_client();
 
