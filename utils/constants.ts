@@ -23,3 +23,7 @@ export const MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 export const MIN_OPTIONS = 2;
 export const MAX_OPTIONS = 5;
 export const SIGNED_URL_EXPIRY_SECONDS = 60 * 5; // 5 minutes
+
+export const DEFAULT_MAX_BODY_BYTES = 64 * 1024;
+
+export const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);

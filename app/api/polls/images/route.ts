@@ -6,7 +6,7 @@ import { get_anon_id_strict } from "@/lib/session";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
-export const DELETE = route<{ keys: string[] }>(
+export const DELETE = route(
   async ({ body }) => {
     const anon_id = await get_anon_id_strict();
     const prefix = `options/${anon_id}/`;

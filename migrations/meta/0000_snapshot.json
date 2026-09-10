@@ -56,12 +56,8 @@
           "name": "options_poll_id_polls_id_fk",
           "tableFrom": "options",
           "tableTo": "polls",
-          "columnsFrom": [
-            "poll_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["poll_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -71,10 +67,7 @@
         "options_poll_id_id_unique": {
           "name": "options_poll_id_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "poll_id",
-            "id"
-          ]
+          "columns": ["poll_id", "id"]
         }
       },
       "policies": {},
@@ -238,12 +231,8 @@
           "name": "reactions_poll_id_polls_id_fk",
           "tableFrom": "reactions",
           "tableTo": "polls",
-          "columnsFrom": [
-            "poll_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["poll_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -253,10 +242,7 @@
         "reactions_poll_id_anon_id_unique": {
           "name": "reactions_poll_id_anon_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "poll_id",
-            "anon_id"
-          ]
+          "columns": ["poll_id", "anon_id"]
         }
       },
       "policies": {},
@@ -349,12 +335,8 @@
           "name": "votes_poll_id_polls_id_fk",
           "tableFrom": "votes",
           "tableTo": "polls",
-          "columnsFrom": [
-            "poll_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["poll_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -362,12 +344,8 @@
           "name": "votes_option_id_options_id_fk",
           "tableFrom": "votes",
           "tableTo": "options",
-          "columnsFrom": [
-            "option_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["option_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -377,10 +355,7 @@
         "votes_poll_id_anon_id_unique": {
           "name": "votes_poll_id_anon_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "poll_id",
-            "anon_id"
-          ]
+          "columns": ["poll_id", "anon_id"]
         }
       },
       "policies": {},
@@ -401,20 +376,12 @@
     "public.poll_status": {
       "name": "poll_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "live"
-      ]
+      "values": ["draft", "live"]
     },
     "public.poll_type": {
       "name": "poll_type",
       "schema": "public",
-      "values": [
-        "single",
-        "rating",
-        "text",
-        "image"
-      ]
+      "values": ["single", "rating", "text", "image"]
     }
   },
   "schemas": {},

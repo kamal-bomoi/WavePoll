@@ -1,20 +1,14 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import z from "zod";
 import { env } from "@/env";
 import { s3 } from "@/lib/s3";
+import { UploadUrlsSchema } from "@/lib/schemas";
 import { get_or_set_anon_id } from "@/lib/session";
-import type { UploadUrlsPayload } from "@/types";
-import {
-  ALLOWED_CONTENT_TYPES,
-  MAX_FILE_SIZE,
-  MAX_OPTIONS,
-  SIGNED_URL_EXPIRY_SECONDS
-} from "@/utils/constants";
+import { SIGNED_URL_EXPIRY_SECONDS } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
 import { route } from "@/utils/route";
 
-export const POST = route<UploadUrlsPayload>(
+export const POST = route(
   async ({ body }) => {
     const anon_id = await get_or_set_anon_id();
 
@@ -43,23 +37,7 @@ export const POST = route<UploadUrlsPayload>(
   },
   {
     schema: {
-      body: z.object({
-        files: z
-          .array(
-            z.object({
-              content_type: z.enum(ALLOWED_CONTENT_TYPES, {
-                error: `Invalid image type. Allowed types: ${ALLOWED_CONTENT_TYPES.map(
-                  (t) => t.replace("image/", "").toUpperCase()
-                ).join(", ")}.`
-              }),
-              content_length: z.number().int().min(1).max(MAX_FILE_SIZE, {
-                error: "Image size must not exceed 5MB."
-              })
-            })
-          )
-          .min(1)
-          .max(MAX_OPTIONS)
-      })
+      body: UploadUrlsSchema
     }
   }
 );

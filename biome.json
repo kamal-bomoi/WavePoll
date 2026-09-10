@@ -38,13 +38,16 @@
       "next": "recommended"
     },
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noArrayIndexKey": "off",
         "noExplicitAny": "off"
       },
       "style": {
         "noNonNullAssertion": "off"
+      },
+      "correctness": {
+        "noUnusedImports": "error"
       }
     }
   },

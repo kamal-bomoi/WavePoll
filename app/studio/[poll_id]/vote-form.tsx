@@ -18,7 +18,8 @@ import { useMutation } from "@/hooks/use-mutation";
 import { usePollEndState } from "@/hooks/use-poll-end-state";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
-import type { Poll, VotePayload } from "@/types";
+import type { CastVoteInput } from "@/lib/schemas";
+import type { Poll } from "@/types";
 import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
 import { calculate_reactions_count } from "@/utils/poll-generic";
 import { SharePollButton } from "../share-poll-button";
@@ -61,18 +62,18 @@ export function VoteForm({
   function vote() {
     if (!can_submit || mutation.isPending) return;
 
-    const payload = (
+    const input = (
       poll.type === "single" || poll.type === "image"
         ? { option_id, reaction }
         : poll.type === "rating"
           ? { rating, reaction }
           : { comment: comment.trim(), reaction }
-    ) as VotePayload;
+    ) as CastVoteInput;
 
     mutation.mutate(
       {
         poll_id: poll.id,
-        payload
+        input
       },
       {
         onSuccess(next_poll) {

@@ -12,7 +12,13 @@ export function Header() {
           <ThemeIcon size={38} radius="xl" color="indigo">
             <IconWaveSine size={20} />
           </ThemeIcon>
-          <Text component={Link} href="/" fw={800} c="dark" className="wave-text-link">
+          <Text
+            component={Link}
+            href="/"
+            fw={800}
+            c="dark"
+            className="wave-text-link"
+          >
             WavePoll
           </Text>
         </Group>
