@@ -1,18 +1,17 @@
 import { eq } from "drizzle-orm";
-import z from "zod";
 import { db } from "@/lib/db/client";
 import { polls, reactions, votes } from "@/lib/db/schema";
 import { emit_poll_new_comment, emit_poll_updated } from "@/lib/realtime";
+import { CastVoteSchema, PollIdSchema } from "@/lib/schemas";
 import { get_or_set_anon_id } from "@/lib/session";
-import type { Vote, VotePayload } from "@/types";
-import { MAX_TEXT_RESPONSE_LENGTH } from "@/utils/constants";
+import type { Vote } from "@/types";
 import { nanoid } from "@/utils/nanoid";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
-export const POST = route<VotePayload, { poll_id: string }>(
+export const POST = route(
   async ({ body, params }) => {
     const poll = await db.query.polls.findFirst({
       columns: {
@@ -110,7 +109,7 @@ export const POST = route<VotePayload, { poll_id: string }>(
 
     await Promise.all([
       emit_poll_updated(next_poll),
-      poll.type === "text" && !!vote.comment
+      poll.type === "text" && vote.comment
         ? emit_poll_new_comment(poll.id, vote)
         : Promise.resolve()
     ]);
@@ -120,30 +119,8 @@ export const POST = route<VotePayload, { poll_id: string }>(
   {
     status: 201,
     schema: {
-      body: z.union([
-        z.object({
-          reaction: z.string().trim().min(1).nullish(),
-          option_id: z.string().trim().min(1)
-        }),
-        z.object({
-          reaction: z.string().trim().min(1).nullish(),
-          rating: z.number().int().min(1).max(5)
-        }),
-        z.object({
-          reaction: z.string().trim().min(1).nullish(),
-          comment: z
-            .string()
-            .trim()
-            .min(1)
-            .max(
-              MAX_TEXT_RESPONSE_LENGTH,
-              `Comment must be at most ${MAX_TEXT_RESPONSE_LENGTH} characters.`
-            )
-        })
-      ]),
-      params: z.object({
-        poll_id: z.string()
-      })
+      body: CastVoteSchema,
+      params: PollIdSchema
     }
   }
 );

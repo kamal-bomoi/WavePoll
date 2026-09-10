@@ -15,10 +15,11 @@ import { useMutation } from "@/hooks/use-mutation";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
 import type { PollType } from "@/lib/db/schema";
-import type { CreatePollPayload, Poll } from "@/types";
+import type { CreatePollInput } from "@/lib/schemas";
+import type { Poll } from "@/types";
 import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 
-export type StudioForm = UseFormReturnType<CreatePollPayload>;
+export type StudioForm = UseFormReturnType<CreatePollInput>;
 
 export default function StudioPage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function StudioPage() {
     null,
     null
   ]);
-  const form = useForm<CreatePollPayload>({
+  const form = useForm<CreatePollInput>({
     initialValues: {
       owner_email: "",
       title: "",
@@ -106,7 +107,7 @@ export default function StudioPage() {
         status: values.status,
         description: values.description || null,
         end_at: to_iso(values.end_at),
-        owner_email: values.owner_email || null,
+        owner_email: null,
         reaction_emojis,
         options: values.type === "single" ? values.options : null,
         image_files

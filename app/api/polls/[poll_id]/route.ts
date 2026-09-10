@@ -1,49 +1,32 @@
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import * as Sentry from "@sentry/nextjs";
-import dayjs from "dayjs";
 import { and, eq } from "drizzle-orm";
-import z from "zod";
 import { env } from "@/env";
 import { db } from "@/lib/db/client";
-import type { PollType } from "@/lib/db/schema";
-import { options, poll_status, poll_type, polls } from "@/lib/db/schema";
+import { options, polls } from "@/lib/db/schema";
 import { schedule_poll_end } from "@/lib/qstash";
 import { emit_poll_updated } from "@/lib/realtime";
 import { s3 } from "@/lib/s3";
+import { PollIdSchema, UpdatePollSchema } from "@/lib/schemas";
 import { assert_owner } from "@/lib/session";
-import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 import { nanoid } from "@/utils/nanoid";
 import { is_poll_ended } from "@/utils/poll-generic";
 import { get_poll } from "@/utils/poll-server";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
-export const GET = route<undefined, { poll_id: string }>(
+export const GET = route(
   async ({ params }) => {
     return get_poll(params.poll_id);
   },
   {
     schema: {
-      params: z.object({
-        poll_id: z.string()
-      })
+      params: PollIdSchema
     }
   }
 );
 
-export const PUT = route<
-  {
-    owner_email?: string | null;
-    title: string;
-    status: "draft" | "live";
-    description: string | null;
-    type: PollType;
-    end_at: string;
-    reaction_emojis: string[] | null;
-    options: string[] | null;
-  },
-  { poll_id: string }
->(
+export const PUT = route(
   async ({ params, body }) => {
     const poll = await db.query.polls.findFirst({
       columns: {
@@ -162,57 +145,13 @@ export const PUT = route<
   },
   {
     schema: {
-      params: z.object({
-        poll_id: z.string()
-      }),
-      body: z
-        .object({
-          owner_email: z.email().nullable().optional(),
-          title: z
-            .string()
-            .trim()
-            .min(3, "Title must be at least 3 characters long.")
-            .max(80, "Title must be at most 80 characters long."),
-          status: z.enum(poll_status.enumValues),
-          description: z
-            .string()
-            .max(300, "Description must be at most 300 characters long.")
-            .nullable(),
-          type: z.enum(poll_type.enumValues),
-          reaction_emojis: z.array(z.string()).min(1).nullable(),
-          end_at: z.iso.datetime(),
-          options: z
-            .array(z.string())
-            .min(MIN_OPTIONS)
-            .max(MAX_OPTIONS)
-            .nullable()
-        })
-        .superRefine((body, ctx) => {
-          const end_at = dayjs(body.end_at);
-          const min_time = dayjs().add(5, "minute");
-
-          if (!end_at.isValid() || end_at.isBefore(min_time))
-            ctx.addIssue({
-              code: "custom",
-              path: ["end_at"],
-              message: "End time must be at least 5 minutes from now."
-            });
-
-          if (
-            (body.type === "single" || body.type === "image") &&
-            !body.options
-          )
-            ctx.addIssue({
-              code: "custom",
-              path: ["options"],
-              message: "Options are required for single choice and image polls."
-            });
-        })
+      params: PollIdSchema,
+      body: UpdatePollSchema
     }
   }
 );
 
-export const DELETE = route<undefined, { poll_id: string }>(
+export const DELETE = route(
   async ({ params }) => {
     const poll = await db.query.polls.findFirst({
       columns: {
@@ -258,9 +197,7 @@ export const DELETE = route<undefined, { poll_id: string }>(
   {
     status: 204,
     schema: {
-      params: z.object({
-        poll_id: z.string()
-      })
+      params: PollIdSchema
     }
   }
 );

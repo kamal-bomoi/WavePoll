@@ -1,6 +1,7 @@
 import { noop } from "@tanstack/react-query";
-import type { CreatePollPayload, Poll, UploadUrl, VotePayload } from "@/types";
+import type { Poll, UploadUrl } from "@/types";
 import { upload } from "@/utils/upload";
+import type { CastVoteInput, CreatePollInput } from "../schemas";
 import { api } from "./client";
 
 export type Mutation = typeof mutations;
@@ -15,14 +16,14 @@ export type MutationVariables<T extends MutationKey> = Parameters<
   Mutation[T]
 >[0];
 
-type PollMutationPayload = Omit<CreatePollPayload, "owner_email"> & {
+type PollMutationInput = Omit<CreatePollInput, "owner_email"> & {
   owner_email?: string | null;
   image_files?: (File | null)[];
 };
 
 export const mutations = {
-  "create poll": async (payload: PollMutationPayload): Promise<Poll> => {
-    const { image_files, ...poll_payload } = payload;
+  "create poll": async (input: PollMutationInput): Promise<Poll> => {
+    const { image_files, ...poll_payload } = input;
 
     if (poll_payload.type !== "image") return api.post("/polls", poll_payload);
 
@@ -47,12 +48,12 @@ export const mutations = {
 
   "update poll": async ({
     poll_id,
-    payload
+    input
   }: {
     poll_id: string;
-    payload: PollMutationPayload;
+    input: PollMutationInput;
   }): Promise<Poll> => {
-    const { image_files, ...poll_payload } = payload;
+    const { image_files, ...poll_payload } = input;
 
     if (poll_payload.type !== "image")
       return api.put(`/polls/${poll_id}`, {
@@ -104,9 +105,9 @@ export const mutations = {
 
   vote: ({
     poll_id,
-    payload
+    input
   }: {
     poll_id: string;
-    payload: VotePayload;
-  }): Promise<Poll> => api.post(`/polls/${poll_id}/votes`, payload)
+    input: CastVoteInput;
+  }): Promise<Poll> => api.post(`/polls/${poll_id}/votes`, input)
 } as const satisfies Record<string, (...args: any[]) => Promise<any>>;

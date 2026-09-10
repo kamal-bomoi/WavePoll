@@ -29,10 +29,7 @@ Realtime polling app built with Next.js, Drizzle ORM, PostgreSQL, Redis, [Upstas
 
 ## Code Quality Tooling
 
-This project uses **[Biome](https://biomejs.dev/)** for formatting and linting.
-
-- It does **not** use Prettier + ESLint.
-- Install the Biome extension/plugin in your IDE to match project formatting/lint behavior.
+This project uses **[Biome](https://biomejs.dev/)** for formatting and linting. Install the Biome extension/plugin in your IDE to match project formatting/lint behavior.
 
 ## Local Development (Important Order for First-Time Setup)
 

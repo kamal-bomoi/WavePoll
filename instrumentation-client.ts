@@ -1,24 +1,41 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
-
-import * as Sentry from "@sentry/nextjs";
+import { Sentry } from "@/lib/sentry";
 
 if (process.env.NEXT_PUBLIC_SENTRY_DSN)
   Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    debug: false,
-    tracesSampleRate: 1,
-    enableLogs: true,
+    environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
+    tracesSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1,
     replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
     integrations: [
       Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true
       }),
-      Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] })
-    ]
+      Sentry.browserTracingIntegration()
+    ],
+    beforeSend(event) {
+      if (
+        event.exception?.values?.some(
+          (e) =>
+            e.value?.includes("Non-Error promise rejection captured with") ||
+            e.value?.includes("Object Not Found Matching Id")
+        )
+      )
+        return null;
+
+      event.tags = {
+        ...event.tags,
+        source: "client"
+      };
+
+      return event;
+    }
   });
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+export function onRouterTransitionStart(
+  url: string,
+  type: "push" | "replace" | "traverse"
+) {
+  Sentry.captureRouterTransitionStart(url, type);
+}

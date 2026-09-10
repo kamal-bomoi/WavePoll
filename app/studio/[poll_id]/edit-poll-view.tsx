@@ -15,7 +15,8 @@ import { useMutation } from "@/hooks/use-mutation";
 import { useUpdateQuery } from "@/hooks/use-update-query";
 import { queries } from "@/lib/api/queries";
 import type { PollType } from "@/lib/db/schema";
-import type { CreatePollPayload, Poll } from "@/types";
+import type { CreatePollInput } from "@/lib/schemas";
+import type { Poll } from "@/types";
 import { MAX_OPTIONS, MIN_OPTIONS } from "@/utils/constants";
 import { is_poll_ended } from "@/utils/poll-generic";
 
@@ -39,7 +40,7 @@ export function EditPollView({
   const [image_files, set_image_files] = useState<(File | null)[]>(
     poll.type === "image" ? poll.options.map(() => null) : []
   );
-  const form = useForm<CreatePollPayload>({
+  const form = useForm<CreatePollInput>({
     initialValues: {
       owner_email: initial_owner_email ?? "",
       title: poll.title,
@@ -144,7 +145,6 @@ export function EditPollView({
         ? values.reaction_emojis
         : null;
 
-    const owner_email = values.owner_email?.trim() ?? "";
     const normalized_image_options = image_option_keys.map((key) => key.trim());
     const normalized_single_options = (values.options ?? [])
       .map((option) => option.trim())
@@ -153,13 +153,13 @@ export function EditPollView({
     mutation.mutate(
       {
         poll_id: poll.id,
-        payload: {
+        input: {
           title: values.title,
           type: values.type,
           status: values.status,
           description: values.description || null,
           end_at: new Date(values.end_at).toISOString(),
-          owner_email: owner_email.length > 0 ? owner_email : null,
+          owner_email: null,
           reaction_emojis,
           image_files,
           options:

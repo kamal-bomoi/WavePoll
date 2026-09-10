@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { db } from "@/lib/db/client";
 import { polls } from "@/lib/db/schema";
 import { emit_poll_presence } from "@/lib/realtime";
 import { redis } from "@/lib/redis";
+import { IndicatePresenceSchema, PollIdSchema } from "@/lib/schemas";
 import {
   PRESENCE_HEARTBEAT_TTL_SECONDS,
   PRESENCE_TIMEOUT_MS
@@ -11,10 +11,7 @@ import {
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
-export const POST = route<
-  { action: "join" | "heartbeat" | "leave"; viewer_id: string },
-  { poll_id: string }
->(
+export const POST = route(
   async ({ body, params }) => {
     if (body.action === "join") {
       const poll = await db.query.polls.findFirst({
@@ -50,13 +47,8 @@ export const POST = route<
   },
   {
     schema: {
-      params: z.object({
-        poll_id: z.string()
-      }),
-      body: z.object({
-        action: z.enum(["join", "heartbeat", "leave"]),
-        viewer_id: z.string().trim().length(21)
-      })
+      params: PollIdSchema,
+      body: IndicatePresenceSchema
     }
   }
 );

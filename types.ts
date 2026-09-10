@@ -1,12 +1,6 @@
 import type { AxiosError } from "axios";
 import type { Merge } from "type-fest";
-import type {
-  OptionRow,
-  PollDetail,
-  PollRow,
-  ReactionRow,
-  VoteRow
-} from "./lib/db/schema";
+import type { OptionRow, PollDetail, VoteRow } from "./lib/db/schema";
 
 export type AnyObject = Record<string, any>;
 
@@ -48,19 +42,6 @@ export type Option = Prettify<
   }
 >;
 
-export type CreatePollPayload = Merge<
-  Omit<PollRow, keyof Generated | "owner_id">,
-  {
-    options: string[] | null;
-    end_at: string;
-  }
->;
-
-export type VotePayload =
-  | { reaction?: Nullish<ReactionRow["emoji"]>; option_id: string }
-  | { reaction?: Nullish<ReactionRow["emoji"]>; rating: number }
-  | { reaction?: Nullish<ReactionRow["emoji"]>; comment: string };
-
 export interface ErrorProps {
   message: string;
   path?: string;
@@ -68,13 +49,6 @@ export interface ErrorProps {
 }
 
 export type ApiError = AxiosError<{ errors: ErrorProps[] }>;
-
-export interface UploadUrlsPayload {
-  files: {
-    content_type: string;
-    content_length: number;
-  }[];
-}
 
 export interface UploadUrl {
   key: string;

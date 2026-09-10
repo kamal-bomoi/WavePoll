@@ -75,18 +75,14 @@ export function PollSetupSection({
         {...form.getInputProps("description")}
       />
       {show_owner_email && (
-        <>
-          <TextInput
-            label="Notification email (optional)"
-            placeholder="you@example.com"
-            type="email"
-            leftSection={<IconMail size={16} />}
-            {...form.getInputProps("owner_email")}
-          />
-          <Text size="xs" c="dimmed" mt={-6}>
-            If provided, we will send a summary email when this poll ends.
-          </Text>
-        </>
+        <TextInput
+          label="Notification email (optional)"
+          placeholder="you@example.com"
+          type="email"
+          leftSection={<IconMail size={16} />}
+          disabled
+          description="Email notifications are temporarily unavailable."
+        />
       )}
       <SegmentedControl
         fullWidth

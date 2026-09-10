@@ -1,18 +1,14 @@
 import { and, desc, eq, lt, or } from "drizzle-orm";
-import z from "zod";
 import { db } from "@/lib/db/client";
 import { polls, votes } from "@/lib/db/schema";
+import { PaginationSchema, PollIdSchema } from "@/lib/schemas";
 import { assert_owner } from "@/lib/session";
 import type { PollResponsesPage } from "@/types";
 import { PAGINATION_LIMIT } from "@/utils/constants";
 import { route } from "@/utils/route";
 import { WavePollError } from "@/utils/wave-poll-error";
 
-export const GET = route<
-  undefined,
-  { poll_id: string },
-  { cursor_created_at?: string; cursor_id?: string }
->(
+export const GET = route(
   async ({ params, query }) => {
     const poll = await db.query.polls.findFirst({
       columns: { id: true, owner_id: true },
@@ -63,25 +59,8 @@ export const GET = route<
   },
   {
     schema: {
-      params: z.object({
-        poll_id: z.string()
-      }),
-      query: z
-        .object({
-          cursor_created_at: z.string().optional(),
-          cursor_id: z.string().optional()
-        })
-        .superRefine((value, ctx) => {
-          const has_created_at = !!value.cursor_created_at;
-          const has_id = !!value.cursor_id;
-
-          if (has_created_at !== has_id)
-            ctx.addIssue({
-              code: "custom",
-              message:
-                "cursor_created_at and cursor_id must be provided together."
-            });
-        })
+      params: PollIdSchema,
+      query: PaginationSchema
     }
   }
 );

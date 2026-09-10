@@ -10,7 +10,7 @@ export function useUpdateQuery() {
       client.setQueryData<T>(key, (cached) => {
         if (cached === undefined) return undefined;
 
-        return produce(cached, (draft) => {
+        return produce(cached as T, (draft) => {
           updater(draft);
         });
       });

@@ -1,4 +1,5 @@
-import type { UploadUrl, UploadUrlsPayload } from "@/types";
+import type { UploadUrlsInput } from "@/lib/schemas";
+import type { UploadUrl } from "@/types";
 
 export async function upload({
   files,
@@ -6,14 +7,15 @@ export async function upload({
   cleanup
 }: {
   files: File[];
-  prepare: (files: UploadUrlsPayload["files"]) => Promise<UploadUrl[]>;
+  prepare: (files: UploadUrlsInput["files"]) => Promise<UploadUrl[]>;
   cleanup: (keys: string[]) => Promise<void>;
 }): Promise<{ keys: string[] }> {
   if (!files.length) return { keys: [] };
 
   const signed = await prepare(
     files.map((file) => ({
-      content_type: file.type,
+      content_type:
+        file.type as UploadUrlsInput["files"][number]["content_type"],
       content_length: file.size
     }))
   );

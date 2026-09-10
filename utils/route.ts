@@ -1,113 +1,154 @@
 import * as Sentry from "@sentry/nextjs";
 import { DrizzleError, DrizzleQueryError } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import type { RequireAtLeastOne } from "type-fest";
-import { ZodError, type ZodType } from "zod";
+import { ZodError, type ZodType, type z } from "zod";
 import { env } from "@/env";
 import type { ErrorProps } from "@/types";
+import { BODY_METHODS, DEFAULT_MAX_BODY_BYTES } from "./constants";
 import { drizzle_error_handler } from "./drizzle-error";
+import { nanoid } from "./nanoid";
 import { WavePollError } from "./wave-poll-error";
 
-export interface RouteContext {
+type MaybeZodSchema = ZodType | undefined;
+
+type InferZod<T extends MaybeZodSchema> = T extends ZodType
+  ? z.infer<T>
+  : unknown;
+
+interface Schema<
+  TBody extends MaybeZodSchema = undefined,
+  TParams extends MaybeZodSchema = undefined,
+  TQuery extends MaybeZodSchema = undefined
+> {
+  body?: TBody;
+  params?: TParams;
+  query?: TQuery;
+}
+
+interface Context<
+  TBody extends MaybeZodSchema,
+  TParams extends MaybeZodSchema,
+  TQuery extends MaybeZodSchema
+> {
+  body: InferZod<TBody>;
+  params: InferZod<TParams>;
+  query: InferZod<TQuery>;
+  request_id: string;
+}
+
+type HandlerFn<
+  TBody extends MaybeZodSchema,
+  TParams extends MaybeZodSchema,
+  TQuery extends MaybeZodSchema,
+  TResult = unknown
+> = (context: Context<TBody, TParams, TQuery>, req: NextRequest) => TResult;
+
+interface RouteOptions<
+  TBody extends MaybeZodSchema = undefined,
+  TParams extends MaybeZodSchema = undefined,
+  TQuery extends MaybeZodSchema = undefined
+> {
+  schema?: Schema<TBody, TParams, TQuery>;
+  status?: 200 | 201 | 204 | 400 | 404 | 422 | 500;
+}
+
+interface RouteContext {
   params?: Promise<Record<string, string>>;
 }
 
-interface Context<TBody, TParams, TQuery> {
-  body: TBody;
-  params: TParams;
-  query: TQuery;
-}
-
-type TypedRouteHandler<TBody, TParams, TQuery> = (
-  context: Context<TBody, TParams, TQuery>,
-  req: NextRequest
-) => any;
-
-export interface RouteOptions<
-  TBody = unknown,
-  TParams extends Record<string, string> = Record<string, string>,
-  TQuery extends Record<string, string> = Record<string, string>
-> {
-  status?:
-    | 200
-    | 201
-    | 204
-    | 400
-    | 401
-    | 403
-    | 404
-    | 409
-    | 422
-    | 429
-    | 500
-    | 503;
-  schema?: RequireAtLeastOne<{
-    body?: ZodType<TBody>;
-    params?: ZodType<TParams>;
-    query?: ZodType<TQuery>;
-  }>;
-  headers?: HeadersInit;
-}
+type NextApiHandler = (
+  req: NextRequest,
+  ctx: RouteContext
+) => Response | Promise<Response>;
 
 export function route<
-  TBody = unknown,
-  TParams extends Record<string, string> = Record<string, string>,
-  TQuery extends Record<string, string> = Record<string, string>
+  TBody extends MaybeZodSchema = undefined,
+  TParams extends MaybeZodSchema = undefined,
+  TQuery extends MaybeZodSchema = undefined,
+  TResult = unknown
 >(
-  handler: TypedRouteHandler<TBody, TParams, TQuery>,
-  options?: RouteOptions<TBody, TParams, TQuery>
-): (req: NextRequest, ctx: RouteContext) => Promise<NextResponse | Response> {
+  handler: HandlerFn<TBody, TParams, TQuery, TResult>,
+  options: RouteOptions<TBody, TParams, TQuery> = {}
+): NextApiHandler {
   return async (req, ctx) => {
+    const request_id = nanoid({ length: 16 });
+
     try {
-      let body: TBody;
-      let params: TParams;
-      let query: TQuery;
+      const content_length = req.headers.get("content-length");
 
-      if (options?.schema) {
-        const result = await validate(req, ctx, options);
-
-        if (!result.ok)
-          return NextResponse.json<{ errors: ErrorProps[] }>(
-            { errors: result.errors },
-            { status: 422 }
-          );
-
-        body = result.values.body;
-        params = result.values.params;
-        query = result.values.query;
-      } else {
-        const has_body = ["POST", "PUT", "PATCH", "DELETE"].includes(
-          req.method
+      if (content_length && Number(content_length) > DEFAULT_MAX_BODY_BYTES)
+        return NextResponse.json(
+          { errors: [{ message: "Payload too large." }] },
+          { status: 413 }
         );
 
-        if (has_body) {
-          try {
-            body = (await req.json()) as TBody;
-          } catch {
-            throw WavePollError.UnprocessableEntity("Invalid JSON body.");
-          }
-        } else body = {} as TBody;
+      const has_body = BODY_METHODS.has(req.method.toUpperCase());
 
-        params = (ctx.params ? await ctx.params : {}) as TParams;
-        query = Object.fromEntries(
-          req.nextUrl.searchParams.entries()
-        ) as TQuery;
+      const [raw_body, raw_params] = await Promise.all([
+        has_body ? parse_json_body(req) : Promise.resolve(undefined),
+        ctx.params ?? Promise.resolve({})
+      ]);
+      const raw_query = Object.fromEntries(req.nextUrl.searchParams.entries());
+
+      let body: InferZod<TBody>;
+      let params: InferZod<TParams>;
+      let query: InferZod<TQuery>;
+
+      if (options.schema) {
+        const [body_result, params_result, query_result] = await Promise.all([
+          validate_segment("body", options.schema.body, raw_body),
+          validate_segment("params", options.schema.params, raw_params),
+          validate_segment("query", options.schema.query, raw_query)
+        ]);
+
+        const errors: { message: string; path?: string; source: string }[] = [];
+
+        for (const result of [body_result, params_result, query_result]) {
+          if (!result.ok) {
+            errors.push(
+              ...result.issues.map((issue) => ({
+                message: issue.message,
+                path: issue.path?.join(".") || undefined,
+                source: result.segment
+              }))
+            );
+          }
+        }
+
+        if (errors.length > 0)
+          return NextResponse.json({ errors }, { status: 422 });
+
+        body = (
+          body_result.ok ? body_result.value : raw_body
+        ) as InferZod<TBody>;
+        params = (
+          params_result.ok ? params_result.value : raw_params
+        ) as InferZod<TParams>;
+        query = (
+          query_result.ok ? query_result.value : raw_query
+        ) as InferZod<TQuery>;
+      } else {
+        body = raw_body as InferZod<TBody>;
+        params = raw_params as InferZod<TParams>;
+        query = raw_query as InferZod<TQuery>;
       }
 
       const context: Context<TBody, TParams, TQuery> = {
         body,
         params,
-        query
+        query,
+        request_id
       };
 
       const response = await handler(context, req);
 
-      const status = options?.status ?? 200;
+      if (response instanceof Response) return response;
 
-      if (status === 204)
-        return new Response(null, { status, headers: options?.headers });
+      const status = options.status ?? 200;
 
-      return NextResponse.json(response, { status, headers: options?.headers });
+      if (status === 204) return new Response(null, { status });
+
+      return NextResponse.json(response ?? { ok: true }, { status });
     } catch (e) {
       const error = e as Error;
 
@@ -136,14 +177,12 @@ export function route<
       if (error instanceof DrizzleError || error instanceof DrizzleQueryError) {
         const { status, errors } = drizzle_error_handler(error);
 
-        return NextResponse.json<{ errors: ErrorProps[] }>(
-          { errors },
-          { status }
-        );
+        return NextResponse.json({ request_id, errors }, { status });
       }
 
-      return NextResponse.json<{ errors: ErrorProps[] }>(
+      return NextResponse.json(
         {
+          request_id,
           errors: [
             {
               message:
@@ -159,91 +198,34 @@ export function route<
   };
 }
 
+async function parse_json_body(req: NextRequest): Promise<unknown> {
+  const raw = await req.text();
+
+  if (raw.trim() === "") return undefined;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw WavePollError.UnprocessableEntity("Invalid JSON body.");
+  }
+}
+
 type Segment = "body" | "params" | "query";
 
 type SegmentValidationResult<T> =
-  | { segment: Segment; value: T }
-  | { segment: Segment; error: ZodError };
-
-type ValidationResult<TBody, TParams, TQuery> =
-  | { ok: false; errors: ErrorProps[] }
-  | { ok: true; values: { body: TBody; params: TParams; query: TQuery } };
-
-async function validate<
-  TBody,
-  TParams extends Record<string, string>,
-  TQuery extends Record<string, string>
->(
-  req: NextRequest,
-  ctx: RouteContext,
-  options?: RouteOptions<TBody, TParams, TQuery>
-): Promise<ValidationResult<TBody, TParams, TQuery>> {
-  const has_body = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
-
-  let raw_body: unknown = {};
-  if (has_body) {
-    try {
-      raw_body = await req.json();
-    } catch {
-      throw WavePollError.UnprocessableEntity("Invalid JSON body.");
-    }
-  }
-
-  const raw_params = ctx.params ? await ctx.params : {};
-  const raw_query = Object.fromEntries(req.nextUrl.searchParams.entries());
-  const results = await Promise.all([
-    validate_segment("body", options?.schema?.body, raw_body),
-    validate_segment("params", options?.schema?.params, raw_params),
-    validate_segment("query", options?.schema?.query, raw_query)
-  ]);
-
-  const errors: ErrorProps[] = [];
-
-  let body = {} as TBody;
-  let params = {} as TParams;
-  let query = {} as TQuery;
-
-  for (const result of results)
-    if ("error" in result)
-      errors.push(
-        ...result.error.issues.map((issue) => ({
-          message: issue.message,
-          path: issue.path.join("."),
-          source: result.segment
-        }))
-      );
-    else if ("value" in result) {
-      if (result.segment === "body") body = result.value as TBody;
-      if (result.segment === "params") params = result.value as TParams;
-      if (result.segment === "query") query = result.value as TQuery;
-    }
-
-  if (errors.length > 0) return { ok: false, errors };
-
-  return {
-    ok: true,
-    values: {
-      body,
-      params,
-      query
-    }
-  };
-}
+  | { segment: Segment; ok: true; value: T }
+  | { segment: Segment; ok: false; issues: z.core.$ZodIssue[] };
 
 async function validate_segment<T>(
   segment: Segment,
   schema: ZodType<T> | undefined,
-  data: unknown
+  input: unknown
 ): Promise<SegmentValidationResult<T>> {
-  if (!schema) return { segment, value: data as T };
+  if (!schema) return { segment, ok: true, value: input as T };
 
-  try {
-    const value = await schema.parseAsync(data);
+  const result = await schema.safeParseAsync(input);
 
-    return { segment, value };
-  } catch (error) {
-    if (error instanceof ZodError) return { segment, error };
+  if (result.success) return { segment, ok: true, value: result.data };
 
-    throw error;
-  }
+  return { segment, ok: false, issues: result.error.issues };
 }

@@ -11,7 +11,7 @@ export function Hero() {
 
   return (
     <Paper withBorder radius="xl" p={{ base: "lg", md: "xl" }} shadow="sm">
-      <Grid gutter="xl" align="center">
+      <Grid gap="xl" align="center">
         <Grid.Col span={{ base: 12, md: 12 }}>
           <Stack gap="md">
             <Title order={1} style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)" }}>
