@@ -107,7 +107,7 @@ export default function StudioPage() {
         status: values.status,
         description: values.description || null,
         end_at: to_iso(values.end_at),
-        owner_email: values.owner_email || null,
+        owner_email: null,
         reaction_emojis,
         options: values.type === "single" ? values.options : null,
         image_files

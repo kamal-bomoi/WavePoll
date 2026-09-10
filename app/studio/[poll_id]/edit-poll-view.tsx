@@ -145,7 +145,6 @@ export function EditPollView({
         ? values.reaction_emojis
         : null;
 
-    const owner_email = values.owner_email?.trim() ?? "";
     const normalized_image_options = image_option_keys.map((key) => key.trim());
     const normalized_single_options = (values.options ?? [])
       .map((option) => option.trim())
@@ -160,7 +159,7 @@ export function EditPollView({
           status: values.status,
           description: values.description || null,
           end_at: new Date(values.end_at).toISOString(),
-          owner_email: owner_email.length > 0 ? owner_email : null,
+          owner_email: null,
           reaction_emojis,
           image_files,
           options:
